@@ -1,35 +1,43 @@
 from mininet.net import Mininet
-from mininet.node import Controller, OVSSwitch, RemoteController
+from mininet.node import Controller, OVSSwitch
 from mininet.cli import CLI
 from mininet.log import setLogLevel, info
 
 def topo():
     info("Creating Network \n")
-    net = Mininet(controller=RemoteController, switch=OVSSwitch)
+    net = Mininet(controller=Controller, switch=OVSSwitch)
 
     info("Adding Network \n")
     c0 = net.addController('c0', ip='172.17.0.1')
 
     info("Adding Hosts \n")
-    h1 = net.addHost('h1')
-    h2 = net.addHost('h2')
-    h3 = net.addHost('h3')
-    h4 = net.addHost('h4')
+    h = []
+    for i in range(1, 7):
+        host = net.addHost(f'h{i}')
+        h.append(host)
     
     info("Adding Switches \n")
-    s1 = net.addSwitch('s1')
-    s2 = net.addSwitch('s2')
+    s = []
+    for i in range(1, 5):
+        switch = net.addSwitch(f's{i}')
+        s.append(switch)
 
     info("Adding Links \n")
-    net.addLink(h1, s1)
-    net.addLink(h2, s1)
-    net.addLink(h3, s2)
-    net.addLink(h4, s2)
-    net.addLink(h1, s2)
+    net.addLink(h[0], s[0])
+    net.addLink(h[1], s[0])
+    net.addLink(h[2], s[1])
+    net.addLink(h[3], s[2])
+    net.addLink(h[4], s[2])
+    net.addLink(h[5], s[3])
+    net.addLink(s[0], s[1])
+    net.addLink(s[0], s[2])
+    net.addLink(s[1], s[2])
+    net.addLink(s[1], s[3])
+    net.addLink(s[2], s[3])
 
     info("Starting Network \n")
-    s1.start([c0])
-    s2.start([c0])
+    for switch in s:
+        switch.start([c0])
 
     net.start()
     CLI(net)
