@@ -1,76 +1,62 @@
+#!/usr/bin/env python
+
+"""
+This example creates a multi-controller network from semi-scratch by
+using the net.add*() API and manually starting the switches and controllers.
+
+This is the "mid-level" API, which is an alternative to the "high-level"
+Topo() API which supports parametrized topology classes.
+
+Note that one could also create a custom switch class and pass it into
+the Mininet() constructor.
+"""
+
+
 from mininet.net import Mininet
-from mininet.node import OVSController, OVSSwitch, OVSBridge
+from mininet.node import OVSController, OVSSwitch
 from mininet.cli import CLI
-from mininet.link import TCLink
 from mininet.log import setLogLevel, info
 
-def topo():
-    info("Creating Network \n")
-    net = Mininet(controller=OVSController, switch=OVSSwitch, link=TCLink, waitConnected=True)
+def multiControllerNet():
+    net = Mininet( controller=OVSController, switch=OVSSwitch,
+                   waitConnected=True )
 
-    info("Adding Network \n")
-    c1 = net.addController('c1', port=6653)
-    c2 = net.addController('c2', port=6654)
+    info( "*** Creating (reference) controllers\n" )
+    c1 = net.addController( 'c1', port=6633 )
+    c2 = net.addController( 'c2', port=6634 )
 
-    info("Adding Switches \n")
-    s1 = net.addSwitch('s1')
-    s2 = net.addSwitch('s2')
-    s3 = net.addSwitch('s3')
-    s4 = net.addSwitch('s4')
-    s5 = net.addSwitch('s5')
-    s6 = net.addSwitch('s6')
-    s7 = net.addSwitch('s7')
-    s8 = net.addSwitch('s8')
+    info( "*** Creating switches\n" )
+    s1 = net.addSwitch( 's1' )
+    s2 = net.addSwitch( 's2' )
 
-    info("Adding Hosts \n")
-    h1 = net.addHost('h1')
-    h2 = net.addHost('h2')
-    h3 = net.addHost('h3')
-    h4 = net.addHost('h4')
-    h5 = net.addHost('h5')
-    h6 = net.addHost('h6')
-    
-    info("Adding Links \n")
-    net.addLink(h1, s1)
-    net.addLink(h2, s2)
-    net.addLink(h3, s3)
-    net.addLink(h4, s6)
-    net.addLink(h5, s8)
-    net.addLink(h6, s8)
+    info( "*** Creating hosts\n" )
+    hosts1 = [ net.addHost( 'h%d' % n ) for n in ( 3, 4 ) ]
+    hosts2 = [ net.addHost( 'h%d' % n ) for n in ( 5, 6 ) ]
 
-    net.addLink(s1, s2)
-    net.addLink(s1, s3)
-    net.addLink(s2, s4)
-    net.addLink(s3, s4)
+    info( "*** Creating links\n" )
+    for h in hosts1:
+        net.addLink( s1, h )
+    for h in hosts2:
+        net.addLink( s2, h )
+    net.addLink( s1, s2 )
 
-    net.addLink(s5, s6)
-    net.addLink(s5, s7)
-    net.addLink(s6, s8)
-    net.addLink(s7, s8)
-
-    net.addLink(s2, s6, bw=125, delay='10ms')
-    net.addLink(s3, s7, bw=100, delay='30ms')
-
-    info("Starting Network \n")
-
+    info( "*** Starting network\n" )
+    net.build()
     c1.start()
     c2.start()
+    s1.start( [ c1 ] )
+    s2.start( [ c2 ] )
 
-    s1.start([c1])
-    s2.start([c1])
-    s3.start([c1])
-    s4.start([c1])
+    info( "*** Testing network\n" )
+    net.pingAll()
 
-    s5.start([c2])
-    s6.start([c2])
-    s7.start([c2])
-    s8.start([c2])
+    info( "*** Running CLI\n" )
+    CLI( net )
 
-    info("Running CLI \n")
-    net.start()
-    CLI(net)
+    info( "*** Stopping network\n" )
     net.stop()
 
+
 if __name__ == '__main__':
-    setLogLevel('info')
-    topo()
+    setLogLevel( 'info' )  # for CLI output
+    multiControllerNet()
