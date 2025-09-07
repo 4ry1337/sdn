@@ -58,7 +58,6 @@ def topo():
     for switch in s[4:]:
         switch.start([c2])
 
-    net.start()
     CLI(net)
     net.stop()
 
