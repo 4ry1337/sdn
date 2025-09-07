@@ -6,21 +6,21 @@ from mininet.log import setLogLevel, info
 
 def topo():
     info("Creating Network \n")
-    net = Mininet(switch=OVSSwitch, link=TCLink, waitConnected=True)
+    net = Mininet(controller=OVSController, switch=OVSSwitch, link=TCLink, waitConnected=True)
 
     info("Adding Network \n")
     c1 = net.addController('c1', port=6653)
     c2 = net.addController('c2', port=6654)
 
     info("Adding Switches \n")
-    s1 = net.addSwitch('s1', failMode='standalone')
-    s2 = net.addSwitch('s2', failMode='standalone')
-    s3 = net.addSwitch('s3', failMode='standalone')
-    s4 = net.addSwitch('s4', failMode='standalone')
-    s5 = net.addSwitch('s5', failMode='standalone')
-    s6 = net.addSwitch('s6', failMode='standalone')
-    s7 = net.addSwitch('s7', failMode='standalone')
-    s8 = net.addSwitch('s8', failMode='standalone')
+    s1 = net.addSwitch('s1')
+    s2 = net.addSwitch('s2')
+    s3 = net.addSwitch('s3')
+    s4 = net.addSwitch('s4')
+    s5 = net.addSwitch('s5')
+    s6 = net.addSwitch('s6')
+    s7 = net.addSwitch('s7')
+    s8 = net.addSwitch('s8')
 
     info("Adding Hosts \n")
     h1 = net.addHost('h1')
