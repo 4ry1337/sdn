@@ -33,3 +33,8 @@ ovs-ofctl add-flow s4 priority=200,dl_type=0x800,nw_src=10.0.0.0/24,nw_dst=10.0.
 # s4 lo:  s4-eth1:h6-eth0 s4-eth2:s2-eth4 s4-eth3:s3-eth5
 ovs-ofctl add-flow s4 arp,nw_dst=10.0.0.3,actions=output:2
 ovs-ofctl add-flow s4 arp,nw_dst=10.0.0.6,actions=output:1
+
+ovs-ofctl dump-flows s1
+ovs-ofctl dump-flows s2
+ovs-ofctl dump-flows s3
+ovs-ofctl dump-flows s4
