@@ -1,14 +1,11 @@
 from mininet.net import Mininet
-from mininet.node import Controller, OVSSwitch
+from mininet.node import OVSSwitch
 from mininet.cli import CLI
 from mininet.log import setLogLevel, info
 
 def topo():
     info("Creating Network \n")
-    net = Mininet(controller=Controller, switch=OVSSwitch)
-
-    info("Adding Network \n")
-    c0 = net.addController('c0', ip='172.17.0.1')
+    net = Mininet(controller=None, switch=OVSSwitch)
 
     info("Adding Hosts \n")
     h = []
@@ -36,8 +33,6 @@ def topo():
     net.addLink(s[2], s[3])
 
     info("Starting Network \n")
-    for switch in s:
-        switch.start([c0])
 
     net.start()
     CLI(net)
