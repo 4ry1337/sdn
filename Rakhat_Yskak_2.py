@@ -6,7 +6,7 @@ from mininet.log import setLogLevel, info
 
 def topo():
     info("Creating Network \n")
-    net = Mininet(switch=OVSSwitch, link=TCLink, waitConnected=True)
+    net = Mininet(waitConnected=True)
 
     info("Adding Network \n")
     c1 = net.addController('c1', ip='127.0.0.1', port=6653)
