@@ -53,8 +53,6 @@ def topo():
 
     info("Starting Network \n")
 
-    net.build()
-
     c1.start()
     c2.start()
 
@@ -68,8 +66,8 @@ def topo():
     s7.start([c2])
     s8.start([c2])
 
-    net.pingAll()
     info("Running CLI \n")
+    net.start()
     CLI(net)
     net.stop()
 
