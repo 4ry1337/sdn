@@ -6,7 +6,7 @@ from mininet.log import setLogLevel, info
 
 def topo():
     info("Creating Network \n")
-    net = Mininet(controller=OVSController, switch=OVSSwitch, link=TCLink, waitConnected=True)
+    net = Mininet(switch=OVSSwitch, link=TCLink, waitConnected=True)
 
     info("Adding Network \n")
     c1 = net.addController('c1', port=6653)
@@ -64,10 +64,7 @@ def topo():
 
     info("Running CLI \n")
     net.start()
-    net.pingAll()
     CLI(net)
-
-    info("Stopping network \n")
     net.stop()
 
 if __name__ == '__main__':
