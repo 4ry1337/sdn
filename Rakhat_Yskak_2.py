@@ -1,15 +1,16 @@
 from mininet.net import Mininet
 from mininet.node import RemoteController, OVSSwitch
 from mininet.cli import CLI
+from mininet.link import TCLink
 from mininet.log import setLogLevel, info
 
 def topo():
     info("Creating Network \n")
-    net = Mininet(controller=RemoteController, switch=OVSSwitch)
+    net = Mininet(controller=RemoteController, switch=OVSSwitch, link=TCLink)
 
     info("Adding Network \n")
-    c1 = net.addController('c1', ip='172.17.0.1')
-    c2 = net.addController('c2', ip='172.17.0.2')
+    c1 = net.addController('c1')
+    c2 = net.addController('c2')
 
     info("Adding Hosts \n")
     h = []
