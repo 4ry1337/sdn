@@ -9,11 +9,11 @@ def topo():
     net = Mininet( controller=OVSController, switch=OVSSwitch,
                    waitConnected=True )
 
-    info( "*** Creating (reference) controllers\n" )
+    info( "Creating (reference) controllers\n" )
     c1 = net.addController( 'c1', port=6633 )
     c2 = net.addController( 'c2', port=6634 )
 
-    info( "*** Creating switches\n" )
+    info( "Creating switches\n" )
     s1 = net.addSwitch( 's1' )
     s2 = net.addSwitch( 's2' )
     s3 = net.addSwitch( 's3' )
@@ -23,22 +23,26 @@ def topo():
     s7 = net.addSwitch( 's7' )
     s8 = net.addSwitch( 's8' )
 
-    info( "*** Creating hosts\n" )
-    hosts1 = [ net.addHost( 'h%d' % n ) for n in ( 1, 3 ) ]
-    hosts2 = [ net.addHost( 'h%d' % n ) for n in ( 4, 6 ) ]
+    info( "Creating hosts\n" )
+    h1 = net.addHost( 'h1' )
+    h2 = net.addHost( 'h2' )
+    h3 = net.addHost( 'h3' )
+    h4 = net.addHost( 'h4' )
+    h5 = net.addHost( 'h5' )
+    h6 = net.addHost( 'h6' )
 
-    info( "*** Creating links\n" )
-    net.addLink( s1, hosts1[0] )
-    net.addLink( s2, hosts1[1] )
-    net.addLink( s3, hosts1[2] )
+    info( "Creating links\n" )
+    net.addLink( s1, h1 )
+    net.addLink( s2, h2 )
+    net.addLink( s3, h3 )
     net.addLink( s1, s2 )
     net.addLink( s1, s3 )
     net.addLink( s4, s2 )
     net.addLink( s4, s3 )
 
-    net.addLink( s6, hosts2[0] )
-    net.addLink( s8, hosts2[1] )
-    net.addLink( s8, hosts2[2] )
+    net.addLink( s6, h4 )
+    net.addLink( s8, h5 )
+    net.addLink( s8, h6 )
     net.addLink( s5, s6 )
     net.addLink( s5, s7 )
     net.addLink( s8, s6 )
@@ -47,7 +51,7 @@ def topo():
     net.addLink(s2, s6)
     net.addLink(s3, s7)
 
-    info( "*** Starting network\n" )
+    info( "Starting network\n" )
     net.build()
     c1.start()
     c2.start()
@@ -60,13 +64,13 @@ def topo():
     s7.start( [ c2 ] )
     s8.start( [ c2 ] )
 
-    info( "*** Testing network\n" )
+    info( "Testing network\n" )
     net.pingAll()
 
-    info( "*** Running CLI\n" )
+    info( "Running CLI\n" )
     CLI( net )
 
-    info( "*** Stopping network\n" )
+    info( "Stopping network\n" )
     net.stop()
 
 
