@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
 from mininet.net import Mininet
-from mininet.node import OVSController, OVSSwitch
+from mininet.node import Controller, OVSSwitch
 from mininet.cli import CLI
 from mininet.log import setLogLevel, info
 
 def topo():
-    net = Mininet( controller=OVSController, switch=OVSSwitch,
+    net = Mininet( controller=Controller, switch=OVSSwitch,
                    waitConnected=True )
 
     info( "Creating (reference) controllers\n" )
