@@ -47,8 +47,9 @@ def topo():
     net.addLink( s5, s7 )
     net.addLink( s8, s6 )
     net.addLink( s8, s7 )
-    net.addLink( s2, s6 )
-    net.addLink( s3, s7 )
+
+    net.addLink(s2, s6, bw=125, delay='10ms')
+    net.addLink(s3, s7, bw=100, delay='30ms')
     
     info( "Starting network\n" )
     net.build()
