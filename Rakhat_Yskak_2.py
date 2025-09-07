@@ -38,7 +38,7 @@ def topo():
     net.addLink(s[4], s[5])
     net.addLink(s[4], s[6])
     net.addLink(s[5], s[7])
-    net.addLink(s[6], s[8])
+    net.addLink(s[6], s[7])
 
     net.addLink(s[1], s[5], bw=125, delay='10ms')
     net.addLink(s[2], s[6], bw=100, delay='30ms')
