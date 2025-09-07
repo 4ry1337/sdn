@@ -52,6 +52,12 @@ def topo():
     net.addLink(s3, s7, bw=100, delay='30ms')
 
     info("Starting Network \n")
+
+    net.build()
+
+    c1.start()
+    c2.start()
+
     s1.start([c1])
     s2.start([c1])
     s3.start([c1])
@@ -62,8 +68,8 @@ def topo():
     s7.start([c2])
     s8.start([c2])
 
+    net.pingAll()
     info("Running CLI \n")
-    net.start()
     CLI(net)
     net.stop()
 
