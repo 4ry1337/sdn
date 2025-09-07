@@ -1,12 +1,12 @@
 from mininet.net import Mininet
-from mininet.node import OVSController, OVSSwitch
+from mininet.node import OVSController, OVSBridge, OVSBridge
 from mininet.cli import CLI
 from mininet.link import TCLink
 from mininet.log import setLogLevel, info
 
 def topo():
     info("Creating Network \n")
-    net = Mininet(controller=OVSController, switch=OVSSwitch, waitConnected=True)
+    net = Mininet(controller=OVSController, switch=OVSBridge, link=TCLink, waitConnected=True)
 
     info("Adding Network \n")
     c1 = net.addController('c1', port=6653)
