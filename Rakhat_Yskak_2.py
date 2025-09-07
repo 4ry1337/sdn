@@ -57,9 +57,6 @@ def topo():
     for switch in s[4:]:
         switch.start([c2])
 
-    info( "*** Testing network\n" )
-    net.pingAll()
-
     CLI(net)
     net.stop()
 
