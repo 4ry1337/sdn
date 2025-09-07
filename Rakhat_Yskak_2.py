@@ -1,12 +1,12 @@
 from mininet.net import Mininet
-from mininet.node import Controller, OVSKernelSwitch
+from mininet.node import Controller, OVSSwitch
 from mininet.cli import CLI
 from mininet.link import TCLink
 from mininet.log import setLogLevel, info
 
 def topo():
     info("Creating Network \n")
-    net = Mininet(controller=Controller, switch=OVSKernelSwitch)
+    net = Mininet(controller=Controller, switch=OVSSwitch)
 
     info("Adding Network \n")
     c1 = net.addController('c1', ip='127.0.0.1', port=6653)
@@ -53,10 +53,6 @@ def topo():
     net.addLink(s3, s7, bw=100, delay='30ms')
 
     info("Starting Network \n")
-    net.build()
-    c1.start()
-    c2.start()
-
     s1.start([c1])
     s2.start([c1])
     s3.start([c1])
@@ -68,6 +64,7 @@ def topo():
     s8.start([c2])
 
     info("Running CLI \n")
+    net.start()
     CLI(net)
 
     info("Stopping network \n")
