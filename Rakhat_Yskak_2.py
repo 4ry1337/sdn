@@ -6,12 +6,11 @@ from mininet.log import setLogLevel, info
 
 def topo():
     info("Creating Network \n")
-    net = Mininet(controller=OVSController, switch=OVSSwitch)
+    net = Mininet(controller=OVSController, switch=OVSSwitch, waitConnected=True)
 
     info("Adding Network \n")
-    c1 = net.addController('c1', ip='127.0.0.1', port=6653)
-    c2 = net.addController('c2', ip='127.0.0.1', port=6654)
-
+    c1 = net.addController('c1', port=6653)
+    c2 = net.addController('c2', port=6654)
 
     info("Adding Switches \n")
     s1 = net.addSwitch('s1')
@@ -65,6 +64,7 @@ def topo():
 
     info("Running CLI \n")
     net.start()
+    net.pingAll()
     CLI(net)
 
     info("Stopping network \n")
