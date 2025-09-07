@@ -26,9 +26,9 @@ def topo():
     
 
     info("Adding Links \n")
-    net.addLink(h[0], s[0])
-    net.addLink(h[1], s[1])
-    net.addLink(h[2], s[2])
+    net.addLink(s[0], h[0])
+    net.addLink(s[1], h[1])
+    net.addLink(s[2], h[2])
 
     net.addLink(s[0], s[1])
     net.addLink(s[0], s[2])
@@ -36,9 +36,9 @@ def topo():
     net.addLink(s[1], s[3])
     net.addLink(s[2], s[3])
 
-    net.addLink(h[3], s[5])
-    net.addLink(h[4], s[7])
-    net.addLink(h[5], s[7])
+    net.addLink(s[5], h[3])
+    net.addLink(s[7], h[4])
+    net.addLink(s[7], h[5])
 
     net.addLink(s[4], s[5])
     net.addLink(s[4], s[6])
@@ -58,6 +58,7 @@ def topo():
     for switch in s[4:]:
         switch.start([c2])
 
+    net.start()
     CLI(net)
     net.stop()
 
