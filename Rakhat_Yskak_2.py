@@ -60,8 +60,6 @@ def topo():
     info( "*** Testing network\n" )
     net.pingAll()
 
-
-    net.start()
     CLI(net)
     net.stop()
 
