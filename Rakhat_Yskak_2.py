@@ -6,11 +6,11 @@ from mininet.log import setLogLevel, info
 
 def topo():
     info("Creating Network \n")
-    net = Mininet(controller=Controller, switch=OVSSwitch, link=TCLink)
+    net = Mininet(controller=Controller, switch=OVSSwitch, link=TCLink, waitConnected=True)
 
     info("Adding Network \n")
-    c1 = net.addController('c1', ip="172.17.0.1")
-    c2 = net.addController('c2', ip="172.17.0.2")
+    c1 = net.addController( 'c1', port=6633 )
+    c2 = net.addController( 'c2', port=6634 )
 
     info("Adding Hosts \n")
     h = []
@@ -49,10 +49,17 @@ def topo():
     net.addLink(s[2], s[6], bw=100, delay='30ms')
 
     info("Starting Network \n")
-    for switch in s[:4]:  # Switches S1-S4 under Controller 1
+    net.build()
+    c1.start()
+    c2.start()
+    for switch in s[:4]:
         switch.start([c1])
-    for switch in s[4:]:  # Switches S5-S8 under Controller 2
+    for switch in s[4:]:
         switch.start([c2])
+
+    info( "*** Testing network\n" )
+    net.pingAll()
+
 
     net.start()
     CLI(net)
