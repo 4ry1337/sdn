@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 from mininet.net import Mininet
-from mininet.node import OVSController, OVSSwitch
+from mininet.node import Controller, OVSSwitch
 from mininet.cli import CLI
 from mininet.log import setLogLevel, info
 from mininet.link import TCLink
 
 def topo():
-    net = Mininet( controller=OVSController, switch=OVSSwitch,
+    net = Mininet( controller=Controller, switch=OVSSwitch,
                    waitConnected=True, link=TCLink, autoStaticArp=True,
                   autoSetMacs=True )
     
     info( "Creating controllers\n" )
-    c1 = net.addController( 'c1', port=6633 )
-    c2 = net.addController( 'c2', port=6634 )
+    c1 = net.addController( 'c1' )
+    c2 = net.addController( 'c2' )
     
     info( "Creating switches\n" )
     s1 = net.addSwitch( 's1' )
