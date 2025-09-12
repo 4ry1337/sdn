@@ -64,9 +64,6 @@ def topo():
     s7.start( [ c2 ] )
     s8.start( [ c2 ] )
     
-    info( "Testing network\n" )
-    net.pingAll()
-    
     info( "Running CLI\n" )
     CLI( net )
     
@@ -74,5 +71,5 @@ def topo():
     net.stop()
 
 if __name__ == '__main__':
-    setLogLevel( 'info' )  # for CLI output
+    setLogLevel( 'info' )
     topo()
