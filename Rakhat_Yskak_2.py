@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from mininet.net import Mininet
 from mininet.node import Controller, OVSSwitch
 from mininet.cli import CLI
