@@ -1,0 +1,24 @@
+Mininet: {
+  label: "Mininet\n(Topology Emulator)"
+}
+
+Floodlight: {
+  label: "Floodlight Controller"
+}
+
+Backend: {
+  label: "Backend"
+  network_fetcher: "Fetcher\n- Polls Floodlight REST API"
+  server: "Server"
+}
+
+Frontend: {
+  label: "Frontend"
+  viz: "D3 renderer"
+}
+
+Mininet -> Floodlight
+Floodlight -> Backend.network_fetcher
+Backend.network_fetcher -> Backend.server
+Backend.server -> Frontend.viz: "HTTP JSON /topology\n(or WebSocket push)"
+Frontend.viz -> Backend.server: "User actions\n(filter, color, refresh)"
