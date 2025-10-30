@@ -12,8 +12,8 @@ PORTS = [6633, 6634, 6635]
 def topology():
     info("*** Starting network\n")
     net = Mininet_wifi()
-    net.setPropagationModel(model="logDistance", exp=4)
 
+    info("*** Creating Controllers\n")
     controllers = []
     for port in PORTS:
         c = net.addController(
@@ -30,11 +30,8 @@ def topology():
         position="10,30,0",
         range=30,
     )
-    c1_s1 = net.addSwitch("c1_s1")
+    c1_s1 = net.addSwitch("c1_s1", protocols="OpenFlow13")
     c1_h1 = net.addHost("c1_h1", ip="10.0.1.1/24")
-
-    net.addLink(c1_ap1, c1_s1)
-    net.addLink(c1_s1, c1_h1)
 
     info("*** Creating Domain 2\n")
     c2_ap1 = net.addAccessPoint(
@@ -45,11 +42,8 @@ def topology():
         position="40,30,0",
         range=30,
     )
-    c2_s1 = net.addSwitch("c2_s1")
+    c2_s1 = net.addSwitch("c2_s1", protocols="OpenFlow13")
     c2_h1 = net.addHost("c2_h1", ip="10.0.2.1/24")
-
-    net.addLink(c2_ap1, c2_s1)
-    net.addLink(c2_s1, c2_h1)
 
     info("*** Creating Domain 3\n")
     c3_ap1 = net.addAccessPoint(
@@ -60,23 +54,33 @@ def topology():
         position="70,30,0",
         range=30,
     )
-    c3_s1 = net.addSwitch("c3_s1")
+    c3_s1 = net.addSwitch("c3_s1", protocols="OpenFlow13")
     c3_h1 = net.addHost("c3_h1", ip="10.0.3.1/24")
-
-    net.addLink(c3_ap1, c3_s1)
-    net.addLink(c3_s1, c3_h1)
 
     info("*** Creating Mobile Stations\n")
     sta1 = net.addStation("sta1", ip="10.0.0.1/24", position="10,30,0", range=15)
     sta2 = net.addStation("sta2", ip="10.0.0.2/24", position="40,30,0", range=15)
     sta3 = net.addStation("sta3", ip="10.0.0.3/24", position="70,30,0", range=15)
 
+    info("*** Configuring WiFi Nodes\n")
+    net.setPropagationModel(model="logDistance", exp=4)
+
+    info("*** Creating Links\n")
+    net.addLink(c1_ap1, c1_s1)
+    net.addLink(c1_s1, c1_h1)
+
+    net.addLink(c2_ap1, c2_s1)
+    net.addLink(c2_s1, c2_h1)
+
+    net.addLink(c3_ap1, c3_s1)
+    net.addLink(c3_s1, c3_h1)
+
     info("*** Creating Inter-Domain Links (Multiple Paths)\n")
     net.addLink(c1_s1, c2_s1)  # Domain 1 to Domain 2
     net.addLink(c2_s1, c3_s1)  # Domain 2 to Domain 3
 
-    info("*** Configuring wifi nodes\n")
-    net.configureWifiNodes()
+    # info("*** Configuring wifi nodes\n")
+    # net.configureWifiNodes()
 
     info("*** Starting network\n")
     net.build()
@@ -84,13 +88,14 @@ def topology():
     for controller in controllers:
         controller.start()
 
+    info("*** Connecting switches to controllers\n")
     c1_s1.start([controllers[0]])
-    c1_ap1.start([controllers[0]])
-
     c2_s1.start([controllers[1]])
-    c2_ap1.start([controllers[1]])
-
     c3_s1.start([controllers[2]])
+
+    info("*** Connecting access point to controllers\n")
+    c1_ap1.start([controllers[0]])
+    c2_ap1.start([controllers[1]])
     c3_ap1.start([controllers[2]])
 
     info("*** Running CLI\n")
