@@ -2,12 +2,10 @@
 
 from mn_wifi.net import Mininet_wifi
 from mn_wifi.cli import CLI
-from mininet.node import OVSSwitch, Controller, RemoteController
-from mininet.log import info, output, warn
+from mininet.node import RemoteController
+from mininet.log import info
 
-from random import randint
-
-HOST = ("192.168.56.1",)
+HOST = "192.168.56.1"
 PORTS = [6633, 6634, 6635]
 
 
@@ -18,6 +16,7 @@ def topology():
 
     controllers = []
     for port in PORTS:
+        print(f"{HOST}:{port}")
         c = net.addController(
             f"c{port}", controller=RemoteController, ip=HOST, port=port
         )
