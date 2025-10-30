@@ -12,7 +12,6 @@ PORTS = [6633, 6634, 6635]
 def topology():
     info("*** Starting network\n")
     net = Mininet_wifi()
-    net.setPropagationModel(model="logDistance", exp=4)
 
     controllers = []
     for port in PORTS:
@@ -77,6 +76,7 @@ def topology():
     net.addLink(c2_s1, c3_s1)  # Domain 2 to Domain 3
 
     info("*** Starting network\n")
+    net.setPropagationModel(model="logDistance", exp=4)
     net.build()
 
     for controller in controllers:
