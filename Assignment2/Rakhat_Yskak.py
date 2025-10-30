@@ -3,7 +3,7 @@
 from mn_wifi.net import Mininet_wifi
 from mn_wifi.cli import CLI
 from mininet.node import RemoteController
-from mininet.log import info
+from mininet.log import setLogLevel, info
 
 HOST = "192.168.56.1"
 PORTS = [6633, 6634, 6635]
@@ -64,6 +64,7 @@ def topology():
 
     info("*** Configuring nodes\n")
     net.setPropagationModel(model="logDistance", exp=3)
+    net.configureWifiNodes()
     net.configureNodes()
 
     info("*** Creating Links\n")
@@ -104,4 +105,5 @@ def topology():
 
 
 if __name__ == "__main__":
+    setLogLevel("info")
     topology()
