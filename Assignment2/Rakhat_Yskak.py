@@ -12,10 +12,10 @@ PORTS = [6633, 6634, 6635]
 def topology():
     info("*** Starting network\n")
     net = Mininet_wifi()
+    net.setPropagationModel(model="logDistance", exp=4)
 
     controllers = []
     for port in PORTS:
-        # print(f"{HOST}:{port}")
         c = net.addController(
             f"c{port}", controller=RemoteController, ip=HOST, port=port
         )
@@ -75,8 +75,10 @@ def topology():
     net.addLink(c1_s1, c2_s1)  # Domain 1 to Domain 2
     net.addLink(c2_s1, c3_s1)  # Domain 2 to Domain 3
 
+    info("*** Configuring wifi nodes\n")
+    net.configureWifiNodes()
+
     info("*** Starting network\n")
-    net.setPropagationModel(model="logDistance", exp=4)
     net.build()
 
     for controller in controllers:
