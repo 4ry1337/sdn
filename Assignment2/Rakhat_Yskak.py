@@ -16,7 +16,7 @@ def topology():
 
     controllers = []
     for port in PORTS:
-        print(f"{HOST}:{port}")
+        # print(f"{HOST}:{port}")
         c = net.addController(
             f"c{port}", controller=RemoteController, ip=HOST, port=port
         )
