@@ -62,8 +62,9 @@ def topology():
     sta2 = net.addStation("sta2", ip="10.0.0.2/24", position="40,30,0", range=15)
     sta3 = net.addStation("sta3", ip="10.0.0.3/24", position="70,30,0", range=15)
 
-    info("*** Configuring WiFi Nodes\n")
-    net.setPropagationModel(model="logDistance", exp=4)
+    info("*** Configuring nodes\n")
+    net.setPropagationModel(model="logDistance", exp=3)
+    net.configureNodes()
 
     info("*** Creating Links\n")
     net.addLink(c1_ap1, c1_s1)
@@ -78,9 +79,6 @@ def topology():
     info("*** Creating Inter-Domain Links (Multiple Paths)\n")
     net.addLink(c1_s1, c2_s1)  # Domain 1 to Domain 2
     net.addLink(c2_s1, c3_s1)  # Domain 2 to Domain 3
-
-    # info("*** Configuring wifi nodes\n")
-    # net.configureWifiNodes()
 
     info("*** Starting network\n")
     net.build()
