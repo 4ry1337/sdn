@@ -2,11 +2,10 @@
 
 from mn_wifi.net import Mininet_wifi
 from mn_wifi.cli import CLI
-from mininet.node import OVSKernelSwitch, RemoteController
+from mininet.node import OVSKernelSwitch, OVSController
 from mn_wifi.node import OVSKernelAP
 from mn_wifi.link import wmediumd
 from mininet.log import setLogLevel, info
-import time
 
 HOST = "192.168.56.1"
 PORTS = [6653, 6654, 6655]
@@ -15,7 +14,7 @@ PORTS = [6653, 6654, 6655]
 def topology():
     info("*** Starting network\n")
     net = Mininet_wifi(
-        controller=None,
+        controller=OVSController,
         switch=OVSKernelSwitch,
         accessPoint=OVSKernelAP,
         link=wmediumd,
@@ -24,9 +23,7 @@ def topology():
     info("*** Creating Controllers\n")
     controllers = []
     for port in PORTS:
-        c = net.addController(
-            f"c{port}", controller=RemoteController, ip=HOST, port=port
-        )
+        c = net.addController(f"c{port}", controller=OVSController)
         controllers.append(c)
 
     info("*** Creating Domain 1\n")
