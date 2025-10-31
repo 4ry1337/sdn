@@ -75,6 +75,9 @@ def topology():
     info("*** Configuring Propagation Model\n")
     net.setPropagationModel(model="logDistance", exp=4)
 
+    info("*** Configuring wifi nodes\n")
+    net.configureWifiNodes()
+
     info("*** Configuring nodes\n")
     net.configureNodes()
 
