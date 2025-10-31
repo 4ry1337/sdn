@@ -24,7 +24,7 @@ def topology():
     info("*** Creating Domain 1\n")
     c1_ap1 = net.addAccessPoint(
         "c1_ap1",
-        ssid="domain1-ssid",
+        ssid="sdn-ssid",
         mode="g",
         channel="1",
         position="10,30,0",
@@ -40,7 +40,7 @@ def topology():
     info("*** Creating Domain 2\n")
     c2_ap1 = net.addAccessPoint(
         "c2_ap1",
-        ssid="domain2-ssid",
+        ssid="sdn-ssid",
         mode="g",
         channel="6",
         position="30,30,0",
@@ -56,7 +56,7 @@ def topology():
     info("*** Creating Domain 3\n")
     c3_ap1 = net.addAccessPoint(
         "c3_ap1",
-        ssid="domain3-ssid",
+        ssid="sdn-ssid",
         mode="g",
         channel="11",
         position="50,30,0",
@@ -142,7 +142,7 @@ def topology():
     # Configure mobility after network is established
     net.plotGraph(max_x=60, max_y=60)
     net.setMobilityModel(
-        time=0,
+        time=10,
         model="RandomDirection",
         max_x=60,
         max_y=60,
