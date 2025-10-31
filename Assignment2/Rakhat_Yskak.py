@@ -79,6 +79,18 @@ def topology():
     net.configureWifiNodes()
     net.configureNodes()
 
+    info("*** Configuring Random Mobility ***\n")
+    # RandomDirection model: stations move continuously and bounce on boundaries
+    net.startMobility(
+        time=0,
+        model="RandomDirection",
+        max_x=60,
+        max_y=60,  # movement area
+        min_v=0.5,
+        max_v=2.0,  # speed range (m/s)
+        seed=42,  # fixed seed for reproducible movement
+    )
+
     info("*** Creating Domain 1 Internal Links\n")
     net.addLink(c1_ap1, c1_s1)  # AP to first switch
     net.addLink(c1_s1, c1_s2)  # Switch to switch
