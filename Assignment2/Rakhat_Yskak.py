@@ -87,12 +87,6 @@ def topology():
     info("*** Configuring Propagation Model\n")
     net.setPropagationModel(model="logDistance", exp=4)
 
-    info("*** Configuring wifi nodes\n")
-    net.configureWifiNodes()
-
-    info("*** Configuring nodes\n")
-    net.configureNodes()
-
     info("*** Creating Domain 1 Internal Links\n")
     net.addLink(c1_ap1, c1_s1)  # AP to first switch
     net.addLink(c1_s1, c1_s2)  # Switch to switch
@@ -128,6 +122,9 @@ def topology():
 
     # Path 3: Direct connection between Domain 1 and Domain 3
     net.addLink(c1_s2, c3_s1)  # Domain 1 to Domain 3 (direct)
+
+    info("*** Configuring wifi nodes\n")
+    net.configureWifiNodes()
 
     info("*** Starting network\n")
     net.build()
