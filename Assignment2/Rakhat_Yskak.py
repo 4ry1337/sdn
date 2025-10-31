@@ -146,12 +146,6 @@ def topology():
     c2_ap1.start([controllers[1]])
     c3_ap1.start([controllers[2]])
 
-    info("*** Waiting for network to stabilize\n")
-    time.sleep(10)
-
-    info("*** Testing connectivity\n")
-    net.pingAll()
-
     info("*** Configuring Mobility ***\n")
     # Configure mobility after network is established
     net.plotGraph(max_x=60, max_y=60)
