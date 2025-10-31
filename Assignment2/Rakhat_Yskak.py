@@ -2,7 +2,7 @@
 
 from mn_wifi.net import Mininet_wifi
 from mn_wifi.cli import CLI
-from mininet.node import OVSController
+from mininet.node import RemoteController
 from mininet.log import setLogLevel, info
 
 HOST = "192.168.56.1"
@@ -16,7 +16,9 @@ def topology():
     info("*** Creating Controllers\n")
     controllers = []
     for port in PORTS:
-        c = net.addController(f"c{port}", controller=OVSController)
+        c = net.addController(
+            f"c{port}", controller=RemoteController, ip=HOST, port=port
+        )
         controllers.append(c)
 
     info("*** Creating Domain 1\n")
