@@ -2,10 +2,9 @@
 
 from mn_wifi.net import Mininet_wifi
 from mn_wifi.cli import CLI
-from mininet.node import Controller, OVSKernelSwitch, RemoteController
+from mininet.node import OVSKernelSwitch, RemoteController
 from mn_wifi.node import OVSKernelAP
 from mn_wifi.link import wmediumd
-from mn_wifi.wmediumdConnector import interference
 from mininet.log import setLogLevel, info
 import time
 
@@ -16,11 +15,10 @@ PORTS = [6653, 6654, 6655]
 def topology():
     info("*** Starting network\n")
     net = Mininet_wifi(
-        controller=RemoteController,
+        controller=None,
         switch=OVSKernelSwitch,
         accessPoint=OVSKernelAP,
         link=wmediumd,
-        wmediumd_mode=interference,
     )
 
     info("*** Creating Controllers\n")
@@ -123,8 +121,11 @@ def topology():
     # Path 3: Direct connection between Domain 1 and Domain 3
     net.addLink(c1_s2, c3_s1)  # Domain 1 to Domain 3 (direct)
 
-    info("*** Configuring wifi nodes\n")
+    info("*** Configuring Wi-Fi nodes\n")
     net.configureWifiNodes()
+
+    info("*** Configuring nodes\n")
+    net.configureNodes()
 
     info("*** Starting network\n")
     net.build()
