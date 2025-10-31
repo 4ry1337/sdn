@@ -2,9 +2,7 @@
 
 from mn_wifi.net import Mininet_wifi
 from mn_wifi.cli import CLI
-from mininet.node import OVSKernelSwitch, OVSController
-from mn_wifi.node import OVSKernelAP
-from mn_wifi.link import wmediumd
+from mininet.node import OVSController
 from mininet.log import setLogLevel, info
 
 HOST = "192.168.56.1"
@@ -13,12 +11,7 @@ PORTS = [6653, 6654, 6655]
 
 def topology():
     info("*** Starting network\n")
-    net = Mininet_wifi(
-        controller=OVSController,
-        switch=OVSKernelSwitch,
-        accessPoint=OVSKernelAP,
-        link=wmediumd,
-    )
+    net = Mininet_wifi()
 
     info("*** Creating Controllers\n")
     controllers = []
