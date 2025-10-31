@@ -67,10 +67,10 @@ def topology():
     c3_h3 = net.addHost("c3_h3", ip="10.0.3.3")
     c3_h4 = net.addHost("c3_h4", ip="10.0.3.4")
 
-    # info("*** Creating Mobile Stations\n")
-    # sta1 = net.addStation("sta1", ip="10.0.0.1", position="10,20,0", range=30)
-    # sta2 = net.addStation("sta2", ip="10.0.0.2", position="40,10,0", range=30)
-    # sta3 = net.addStation("sta3", ip="10.0.0.3", position="70,30,0", range=30)
+    info("*** Creating Mobile Stations\n")
+    sta1 = net.addStation("sta1", ip="10.0.0.1", position="10,20,0", range=30)
+    sta2 = net.addStation("sta2", ip="10.0.0.2", position="40,10,0", range=30)
+    sta3 = net.addStation("sta3", ip="10.0.0.3", position="70,30,0", range=30)
 
     info("*** Configuring Propagation Model\n")
     net.setPropagationModel(model="logDistance", exp=4)
@@ -114,20 +114,20 @@ def topology():
     # Path 3: Direct connection between Domain 1 and Domain 3
     net.addLink(c1_s2, c3_s1)  # Domain 1 to Domain 3 (direct)
 
-    # info("*** Configuring Random Mobility ***\n")
-    # # RandomDirection model: stations move continuously and bounce on boundaries
-    # net.plotGraph(max_x=60, max_y=60)
-    # net.setMobilityModel(
-    #     time=0,
-    #     model="RandomDirection",
-    #     max_x=60,
-    #     max_y=60,  # movement area
-    #     min_v=0.5,
-    #     max_v=2.0,  # speed range (m/s)
-    #     seed=42,  # fixed seed for reproducible movement
-    #     ac_method="ssf",  # smooth stepping filter
-    #     mobility_log=True,  # enable logging
-    # )
+    info("*** Configuring Random Mobility ***\n")
+    # RandomDirection model: stations move continuously and bounce on boundaries
+    net.plotGraph(max_x=60, max_y=60)
+    net.setMobilityModel(
+        time=0,
+        model="RandomDirection",
+        max_x=60,
+        max_y=60,  # movement area
+        min_v=0.5,
+        max_v=2.0,  # speed range (m/s)
+        seed=42,  # fixed seed for reproducible movement
+        ac_method="ssf",  # smooth stepping filter
+        mobility_log=True,  # enable logging
+    )
 
     info("*** Starting network\n")
     net.build()
