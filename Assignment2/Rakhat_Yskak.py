@@ -2,6 +2,7 @@
 
 from mn_wifi.net import Mininet_wifi
 from mn_wifi.cli import CLI
+from mininet.link import TCLink
 from mininet.node import RemoteController, OVSSwitch
 from mininet.log import setLogLevel, info
 
@@ -11,7 +12,14 @@ PORTS = [6653, 6654, 6655]
 
 def topology():
     info("*** Starting network\n")
-    net = Mininet_wifi(controller=None, switch=OVSSwitch)
+    net = Mininet_wifi(
+        controller=None,
+        switch=OVSSwitch,
+        waitConnected=True,
+        link=TCLink,
+        autoStaticArp=True,
+        autoSetMacs=True,
+    )
 
     info("*** Creating Controllers\n")
     controllers = []
