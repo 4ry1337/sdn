@@ -28,7 +28,7 @@ def topology():
         mode="g",
         channel="1",
         position="10,30,0",
-        range=30,
+        range=120,
     )
     c1_s1 = net.addSwitch("c1_s1", protocols="OpenFlow13")
     c1_s2 = net.addSwitch("c1_s2", protocols="OpenFlow13")
@@ -44,7 +44,7 @@ def topology():
         mode="g",
         channel="6",
         position="30,30,0",
-        range=30,
+        range=120,
     )
     c2_s1 = net.addSwitch("c2_s1", protocols="OpenFlow13")
     c2_s2 = net.addSwitch("c2_s2", protocols="OpenFlow13")
@@ -60,7 +60,7 @@ def topology():
         mode="g",
         channel="11",
         position="50,30,0",
-        range=30,
+        range=120,
     )
     c3_s1 = net.addSwitch("c3_s1", protocols="OpenFlow13")
     c3_s2 = net.addSwitch("c3_s2", protocols="OpenFlow13")
@@ -70,9 +70,9 @@ def topology():
     c3_h4 = net.addHost("c3_h4", ip="10.0.3.4/24")
 
     info("*** Creating Mobile Stations\n")
-    sta1 = net.addStation("sta1", ip="10.0.0.1/24", position="10,20,0", range=15)
-    sta2 = net.addStation("sta2", ip="10.0.0.2/24", position="40,10,0", range=15)
-    sta3 = net.addStation("sta3", ip="10.0.0.3/24", position="70,30,0", range=15)
+    sta1 = net.addStation("sta1", ip="10.0.0.1/24", position="10,20,0", range=120)
+    sta2 = net.addStation("sta2", ip="10.0.0.2/24", position="40,10,0", range=120)
+    sta3 = net.addStation("sta3", ip="10.0.0.3/24", position="70,30,0", range=120)
 
     info("*** Configuring nodes\n")
     net.setPropagationModel(model="logDistance", exp=4)
