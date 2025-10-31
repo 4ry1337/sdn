@@ -2,7 +2,7 @@
 
 from mn_wifi.net import Mininet_wifi
 from mn_wifi.cli import CLI
-from mininet.node import RemoteController
+from mininet.node import RemoteController, OVSSwitch
 from mininet.log import setLogLevel, info
 
 HOST = "192.168.56.1"
@@ -11,7 +11,7 @@ PORTS = [6653, 6654, 6655]
 
 def topology():
     info("*** Starting network\n")
-    net = Mininet_wifi()
+    net = Mininet_wifi(controller=None, switch=OVSSwitch)
 
     info("*** Creating Controllers\n")
     controllers = []
@@ -26,32 +26,30 @@ def topology():
         "c1_ap1",
         ssid="domain1-ssid",
         mode="g",
-        channel="1",
         position="10,30,0",
-        range=120,
+        range=40,
     )
-    c1_s1 = net.addSwitch("c1_s1", protocols="OpenFlow13")
-    c1_s2 = net.addSwitch("c1_s2", protocols="OpenFlow13")
-    c1_h1 = net.addHost("c1_h1", ip="10.0.1.1/24")
-    c1_h2 = net.addHost("c1_h2", ip="10.0.1.2/24")
-    c1_h3 = net.addHost("c1_h3", ip="10.0.1.3/24")
-    c1_h4 = net.addHost("c1_h4", ip="10.0.1.4/24")
+    c1_s1 = net.addSwitch("c1_s1")
+    c1_s2 = net.addSwitch("c1_s2")
+    c1_h1 = net.addHost("c1_h1", ip="10.0.1.1")
+    c1_h2 = net.addHost("c1_h2", ip="10.0.1.2")
+    c1_h3 = net.addHost("c1_h3", ip="10.0.1.3")
+    c1_h4 = net.addHost("c1_h4", ip="10.0.1.4")
 
     info("*** Creating Domain 2\n")
     c2_ap1 = net.addAccessPoint(
         "c2_ap1",
         ssid="domain2-ssid",
         mode="g",
-        channel="6",
         position="30,30,0",
-        range=120,
+        range=40,
     )
-    c2_s1 = net.addSwitch("c2_s1", protocols="OpenFlow13")
-    c2_s2 = net.addSwitch("c2_s2", protocols="OpenFlow13")
-    c2_h1 = net.addHost("c2_h1", ip="10.0.2.1/24")
-    c2_h2 = net.addHost("c2_h2", ip="10.0.2.2/24")
-    c2_h3 = net.addHost("c2_h3", ip="10.0.2.3/24")
-    c2_h4 = net.addHost("c2_h4", ip="10.0.2.4/24")
+    c2_s1 = net.addSwitch("c2_s1")
+    c2_s2 = net.addSwitch("c2_s2")
+    c2_h1 = net.addHost("c2_h1", ip="10.0.2.1")
+    c2_h2 = net.addHost("c2_h2", ip="10.0.2.2")
+    c2_h3 = net.addHost("c2_h3", ip="10.0.2.3")
+    c2_h4 = net.addHost("c2_h4", ip="10.0.2.4")
 
     info("*** Creating Domain 3\n")
     c3_ap1 = net.addAccessPoint(
@@ -60,38 +58,25 @@ def topology():
         mode="g",
         channel="11",
         position="50,30,0",
-        range=120,
+        range=40,
     )
-    c3_s1 = net.addSwitch("c3_s1", protocols="OpenFlow13")
-    c3_s2 = net.addSwitch("c3_s2", protocols="OpenFlow13")
-    c3_h1 = net.addHost("c3_h1", ip="10.0.3.1/24")
-    c3_h2 = net.addHost("c3_h2", ip="10.0.3.2/24")
-    c3_h3 = net.addHost("c3_h3", ip="10.0.3.3/24")
-    c3_h4 = net.addHost("c3_h4", ip="10.0.3.4/24")
+    c3_s1 = net.addSwitch("c3_s1")
+    c3_s2 = net.addSwitch("c3_s2")
+    c3_h1 = net.addHost("c3_h1", ip="10.0.3.1")
+    c3_h2 = net.addHost("c3_h2", ip="10.0.3.2")
+    c3_h3 = net.addHost("c3_h3", ip="10.0.3.3")
+    c3_h4 = net.addHost("c3_h4", ip="10.0.3.4")
 
     info("*** Creating Mobile Stations\n")
-    sta1 = net.addStation("sta1", ip="10.0.0.1/24", position="10,20,0", range=120)
-    sta2 = net.addStation("sta2", ip="10.0.0.2/24", position="40,10,0", range=120)
-    sta3 = net.addStation("sta3", ip="10.0.0.3/24", position="70,30,0", range=120)
+    sta1 = net.addStation("sta1", ip="10.0.0.1", position="10,20,0", range=30)
+    sta2 = net.addStation("sta2", ip="10.0.0.2", position="40,10,0", range=30)
+    sta3 = net.addStation("sta3", ip="10.0.0.3", position="70,30,0", range=30)
+
+    info("*** Configuring Propagation Model\n")
+    net.setPropagationModel(model="logDistance", exp=4)
 
     info("*** Configuring nodes\n")
-    net.setPropagationModel(model="logDistance", exp=4)
-    net.configureWifiNodes()
     net.configureNodes()
-
-    info("*** Configuring Random Mobility ***\n")
-    # RandomDirection model: stations move continuously and bounce on boundaries
-    net.startMobility(
-        time=0,
-        model="RandomDirection",
-        max_x=60,
-        max_y=60,  # movement area
-        min_v=0.5,
-        max_v=2.0,  # speed range (m/s)
-        seed=42,  # fixed seed for reproducible movement
-        ac_method="ssf",  # smooth stepping filter
-        mobility_log=True,  # enable logging
-    )
 
     info("*** Creating Domain 1 Internal Links\n")
     net.addLink(c1_ap1, c1_s1)  # AP to first switch
@@ -129,8 +114,22 @@ def topology():
     # Path 3: Direct connection between Domain 1 and Domain 3
     net.addLink(c1_s2, c3_s1)  # Domain 1 to Domain 3 (direct)
 
-    info("*** Starting network\n")
+    info("*** Configuring Random Mobility ***\n")
+    # RandomDirection model: stations move continuously and bounce on boundaries
     net.plotGraph(max_x=60, max_y=60)
+    net.setMobilityModel(
+        time=0,
+        model="RandomDirection",
+        max_x=60,
+        max_y=60,  # movement area
+        min_v=0.5,
+        max_v=2.0,  # speed range (m/s)
+        seed=42,  # fixed seed for reproducible movement
+        ac_method="ssf",  # smooth stepping filter
+        mobility_log=True,  # enable logging
+    )
+
+    info("*** Starting network\n")
     net.build()
 
     for controller in controllers:
