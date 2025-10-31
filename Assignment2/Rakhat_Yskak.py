@@ -89,6 +89,8 @@ def topology():
         min_v=0.5,
         max_v=2.0,  # speed range (m/s)
         seed=42,  # fixed seed for reproducible movement
+        ac_method="ssf",  # smooth stepping filter
+        mobility_log=True,  # enable logging
     )
 
     info("*** Creating Domain 1 Internal Links\n")
@@ -128,6 +130,7 @@ def topology():
     net.addLink(c1_s2, c3_s1)  # Domain 1 to Domain 3 (direct)
 
     info("*** Starting network\n")
+    net.plotGraph(max_x=60, max_y=60)
     net.build()
 
     for controller in controllers:
