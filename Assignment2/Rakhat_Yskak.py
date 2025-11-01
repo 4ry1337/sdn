@@ -116,8 +116,8 @@ def topology():
     info("*** Configuring Wi-Fi nodes\n")
     net.configureWifiNodes()
 
-    info("*** Configuring nodes\n")
-    net.configureNodes()
+    # info("*** Configuring nodes\n")
+    # net.configureNodes()
 
     info("*** Starting network\n")
     net.build()
