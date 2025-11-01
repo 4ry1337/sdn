@@ -1,17 +1,17 @@
 #!/bin/bash
 
 # Delete all existing flows from switches and APs
-ovs-ofctl del-flows c1_s1
-ovs-ofctl del-flows c1_s2
-ovs-ofctl del-flows c1_ap1
+sudo ovs-ofctl del-flows c1_s1
+sudo ovs-ofctl del-flows c1_s2
+sudo ovs-ofctl del-flows c1_ap1
 
-ovs-ofctl del-flows c2_s1
-ovs-ofctl del-flows c2_s2
-ovs-ofctl del-flows c2_ap1
+sudo ovs-ofctl del-flows c2_s1
+sudo ovs-ofctl del-flows c2_s2
+sudo ovs-ofctl del-flows c2_ap1
 
-ovs-ofctl del-flows c3_s1
-ovs-ofctl del-flows c3_s2
-ovs-ofctl del-flows c3_ap1
+sudo ovs-ofctl del-flows c3_s1
+sudo ovs-ofctl del-flows c3_s2
+sudo ovs-ofctl del-flows c3_ap1
 
 # mininet-wifi> net
 # c1_h1 c1_h1-eth0:c1_s1-eth3
@@ -44,14 +44,14 @@ ovs-ofctl del-flows c3_ap1
 
 # Add flood rule to each (default action: flood all unmatched packets)
 # Use -O OpenFlow13 to ensure compatibility
-ovs-ofctl -O OpenFlow13 add-flow c1_s1 priority=0,actions=flood
-ovs-ofctl -O OpenFlow13 add-flow c1_s2 priority=0,actions=flood
-ovs-ofctl -O OpenFlow13 add-flow c1_ap1 priority=0,actions=flood
+sudo ovs-ofctl -O OpenFlow13 add-flow c1_s1 priority=0,actions=flood
+sudo ovs-ofctl -O OpenFlow13 add-flow c1_s2 priority=0,actions=flood
+sudo ovs-ofctl -O OpenFlow13 add-flow c1_ap1 priority=0,actions=flood
 
-ovs-ofctl -O OpenFlow13 add-flow c2_s1 priority=0,actions=flood
-ovs-ofctl -O OpenFlow13 add-flow c2_s2 priority=0,actions=flood
-ovs-ofctl -O OpenFlow13 add-flow c2_ap1 priority=0,actions=flood
+sudo ovs-ofctl -O OpenFlow13 add-flow c2_s1 priority=0,actions=flood
+sudo ovs-ofctl -O OpenFlow13 add-flow c2_s2 priority=0,actions=flood
+sudo ovs-ofctl -O OpenFlow13 add-flow c2_ap1 priority=0,actions=flood
 
-ovs-ofctl -O OpenFlow13 add-flow c3_s1 priority=0,actions=flood
-ovs-ofctl -O OpenFlow13 add-flow c3_s2 priority=0,actions=flood
-ovs-ofctl -O OpenFlow13 add-flow c3_ap1 priority=0,actions=flood
+sudo ovs-ofctl -O OpenFlow13 add-flow c3_s1 priority=0,actions=flood
+sudo ovs-ofctl -O OpenFlow13 add-flow c3_s2 priority=0,actions=flood
+sudo ovs-ofctl -O OpenFlow13 add-flow c3_ap1 priority=0,actions=flood
