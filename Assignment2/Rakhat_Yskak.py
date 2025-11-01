@@ -30,8 +30,8 @@ def topology():
         position="10,30,0",
         range=40,
     )
-    c1_s1 = net.addSwitch("c1_s1", protocols="OpenFlow13")
-    c1_s2 = net.addSwitch("c1_s2", protocols="OpenFlow13")
+    c1_s1 = net.addSwitch("c1_s1", protocols="OpenFlow13", stp=True)
+    c1_s2 = net.addSwitch("c1_s2", protocols="OpenFlow13", stp=True)
     c1_h1 = net.addHost("c1_h1", ip="10.0.0.1/24")
     c1_h2 = net.addHost("c1_h2", ip="10.0.0.2/24")
     c1_h3 = net.addHost("c1_h3", ip="10.0.0.3/24")
@@ -46,8 +46,8 @@ def topology():
         position="30,30,0",
         range=40,
     )
-    c2_s1 = net.addSwitch("c2_s1", protocols="OpenFlow13")
-    c2_s2 = net.addSwitch("c2_s2", protocols="OpenFlow13")
+    c2_s1 = net.addSwitch("c2_s1", protocols="OpenFlow13", stp=True)
+    c2_s2 = net.addSwitch("c2_s2", protocols="OpenFlow13", stp=True)
     c2_h1 = net.addHost("c2_h1", ip="10.0.0.5/24")
     c2_h2 = net.addHost("c2_h2", ip="10.0.0.6/24")
     c2_h3 = net.addHost("c2_h3", ip="10.0.0.7/24")
@@ -62,8 +62,8 @@ def topology():
         position="50,30,0",
         range=40,
     )
-    c3_s1 = net.addSwitch("c3_s1", protocols="OpenFlow13")
-    c3_s2 = net.addSwitch("c3_s2", protocols="OpenFlow13")
+    c3_s1 = net.addSwitch("c3_s1", protocols="OpenFlow13", stp=True)
+    c3_s2 = net.addSwitch("c3_s2", protocols="OpenFlow13", stp=True)
     c3_h1 = net.addHost("c3_h1", ip="10.0.0.9/24")
     c3_h2 = net.addHost("c3_h2", ip="10.0.0.10/24")
     c3_h3 = net.addHost("c3_h3", ip="10.0.0.11/24")
