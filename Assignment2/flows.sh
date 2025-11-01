@@ -44,14 +44,14 @@ sudo ovs-ofctl del-flows c3_ap1
 
 # Add flood rule to each (default action: flood all unmatched packets)
 # Use -O OpenFlow13 to ensure compatibility
-sudo ovs-ofctl -O OpenFlow13 add-flow c1_s1 priority=0,actions=flood
-sudo ovs-ofctl -O OpenFlow13 add-flow c1_s2 priority=0,actions=flood
-sudo ovs-ofctl -O OpenFlow13 add-flow c1_ap1 priority=0,actions=flood
+sudo ovs-ofctl add-flow c1_s1 priority=0,actions=flood
+sudo ovs-ofctl add-flow c1_s2 priority=0,actions=flood
+sudo ovs-ofctl add-flow c1_ap1 priority=0,actions=flood
 
-sudo ovs-ofctl -O OpenFlow13 add-flow c2_s1 priority=0,actions=flood
-sudo ovs-ofctl -O OpenFlow13 add-flow c2_s2 priority=0,actions=flood
-sudo ovs-ofctl -O OpenFlow13 add-flow c2_ap1 priority=0,actions=flood
+sudo ovs-ofctl add-flow c2_s1 priority=0,actions=flood
+sudo ovs-ofctl add-flow c2_s2 priority=0,actions=flood
+sudo ovs-ofctl add-flow c2_ap1 priority=0,actions=flood
 
-sudo ovs-ofctl -O OpenFlow13 add-flow c3_s1 priority=0,actions=flood
-sudo ovs-ofctl -O OpenFlow13 add-flow c3_s2 priority=0,actions=flood
-sudo ovs-ofctl -O OpenFlow13 add-flow c3_ap1 priority=0,actions=flood
+sudo ovs-ofctl add-flow c3_s1 priority=0,actions=flood
+sudo ovs-ofctl add-flow c3_s2 priority=0,actions=flood
+sudo ovs-ofctl add-flow c3_ap1 priority=0,actions=flood
