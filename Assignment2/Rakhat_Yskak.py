@@ -70,9 +70,9 @@ def topology():
     c3_h4 = net.addHost("c3_h4", ip="10.0.0.12/24")
 
     info("*** Creating Mobile Stations\n")
-    sta1 = net.addStation("sta1", ip="10.0.0.13/24", position="10,20,0", range=30)
-    sta2 = net.addStation("sta2", ip="10.0.0.14/24", position="30,20,0", range=30)
-    sta3 = net.addStation("sta3", ip="10.0.0.15/24", position="50,20,0", range=30)
+    sta1 = net.addStation("sta1", ip="10.0.0.13/24", position="10,20,0", range=35)
+    sta2 = net.addStation("sta2", ip="10.0.0.14/24", position="30,20,0", range=35)
+    sta3 = net.addStation("sta3", ip="10.0.0.15/24", position="50,20,0", range=35)
 
     info("*** Configuring Propagation Model\n")
     net.setPropagationModel(model="logDistance", exp=4)
