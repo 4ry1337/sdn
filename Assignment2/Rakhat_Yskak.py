@@ -11,7 +11,7 @@ PORTS = [6653, 6654, 6655]
 
 def topology():
     info("*** Starting network\n")
-    net = Mininet_wifi()
+    net = Mininet_wifi(waitConnected=True, autoStaticArp=True, autoSetMacs=True)
 
     info("*** Creating Controllers\n")
     controllers = []
