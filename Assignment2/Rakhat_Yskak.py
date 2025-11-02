@@ -75,6 +75,9 @@ def topology():
     net.addLink(c1_s2, c2_s1)  # Domain 1 <-> Domain 2
     net.addLink(c2_s2, c3_s1)  # Domain 2 <-> Domain 3
 
+    info("*** Configuring WiFi nodes\n")
+    net.configureWifiNodes()
+
     info("*** Building network\n")
     net.build()
 
