@@ -6,12 +6,12 @@ from mininet.node import RemoteController
 from mininet.log import setLogLevel, info
 
 HOST = "192.168.56.1"
-PORTS = [6653, 6654, 6655]
+PORTS = [6633, 6634, 6635]
 
 
 def topology():
     info("*** Starting network\n")
-    net = Mininet_wifi(autoStaticArp=True, autoSetMacs=True)
+    net = Mininet_wifi(autoSetMacs=True)
 
     info("*** Creating Controllers\n")
     c1 = net.addController("c1", controller=RemoteController, ip=HOST, port=PORTS[0])
