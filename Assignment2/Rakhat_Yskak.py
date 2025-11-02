@@ -316,8 +316,14 @@ def topology():
     c3_s2.start([c3])
     c3_ap1.start([c3])
 
-    info("*** Starting CLI\n")
-    CLI(net)
+    # info("*** Starting CLI\n")
+    # CLI(net)
+
+    info("*** Waiting for network to stabilize\n")
+    time.sleep(5)
+
+    # Run automated tests
+    run_tests(net)
 
     net.stop()
 
