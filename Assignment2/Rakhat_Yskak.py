@@ -1,202 +1,161 @@
 #!/usr/bin/python
 
-# from mn_wifi.cli import CLI
+from mn_wifi.cli import CLI
 from mn_wifi.net import Mininet_wifi
 from mininet.node import RemoteController
 from mininet.log import setLogLevel, info
+import os
 import time
-import csv
 
 HOST = "192.168.56.1"
 PORTS = [6633, 6634, 6635]
 
-
-def measure_icmp(net, src, dst, duration=90, output_file="./icmp_results.csv"):
-    """Continuously ping and measure latency"""
-    info(f"*** Starting ICMP test: {src.name} -> {dst.IP()}\n")
-
-    results = []
-    start_time = time.time()
-
-    while time.time() - start_time < duration:
-        timestamp = time.time() - start_time
-        result = src.cmd(f"ping -c 1 -W 1 {dst.IP()}")
-
-        # Parse ping output for latency
-        if "time=" in result:
-            try:
-                latency = float(result.split("time=")[1].split(" ")[0])
-                packet_loss = 0
-            except:
-                latency = None
-                packet_loss = 1
-        else:
-            latency = None
-            packet_loss = 1
-
-        results.append(
-            {"time": timestamp, "latency": latency, "packet_loss": packet_loss}
-        )
-
-        if int(timestamp) % 10 == 0:
-            info(f"  ICMP: {int(timestamp)}s elapsed\n")
-
-        time.sleep(1)
-
-    # Save results
-    with open(output_file, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["time", "latency", "packet_loss"])
-        writer.writeheader()
-        writer.writerows(results)
-
-    info(f"*** ICMP test completed. Results saved to {output_file}\n")
+# Create tests directory if it doesn't exist
+if not os.path.exists("./tests"):
+    os.makedirs("./tests")
 
 
-def measure_tcp(net, server, client, duration=90, output_file="./tcp_results.csv"):
-    """Run iperf TCP test and measure throughput"""
-    info(f"*** Starting TCP test: {client.name} -> {server.name}\n")
+def run_baseline_tests(net):
+    """Run tests WITHOUT mobility to establish baseline performance"""
 
-    # Start iperf server
-    server.cmd("killall iperf 2>/dev/null")
-    server.cmd("iperf -s &")
-    time.sleep(2)
-
-    results = []
-    start_time = time.time()
-
-    # Start iperf client in background
-    client.cmd(
-        f"iperf -c {server.IP()} -t {duration} -i 1 > ./iperf_tcp_{client.name}.txt &"
-    )
-
-    # Monitor output
-    while time.time() - start_time < duration + 5:
-        time.sleep(1)
-        timestamp = time.time() - start_time
-
-        # Read iperf output
-        output = client.cmd(f"tail -n 1 ./iperf_tcp_{client.name}.txt")
-
-        if "Mbits/sec" in output and "sec" in output:
-            try:
-                # Parse: [ ID] Interval       Transfer     Bandwidth
-                parts = output.split()
-                for i, part in enumerate(parts):
-                    if "Mbits/sec" in part or (
-                        i > 0
-                        and parts[i - 1].replace(".", "").isdigit()
-                        and "Mbits/sec" in parts[i + 1]
-                        if i + 1 < len(parts)
-                        else False
-                    ):
-                        throughput = (
-                            float(parts[i - 1]) if "Mbits/sec" in part else float(part)
-                        )
-                        results.append({"time": timestamp, "throughput": throughput})
-                        break
-            except:
-                pass
-
-        if int(timestamp) % 10 == 0:
-            info(f"  TCP: {int(timestamp)}s elapsed\n")
-
-    # Cleanup
-    server.cmd("killall iperf")
-    client.cmd("killall iperf")
-
-    # Save results
-    with open(output_file, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["time", "throughput"])
-        writer.writeheader()
-        writer.writerows(results)
-
-    info(f"*** TCP test completed. Results saved to {output_file}\n")
-
-
-def measure_udp(net, server, client, duration=90, output_file="./udp_results.csv"):
-    """Run iperf UDP test and measure throughput"""
-    info(f"*** Starting UDP test: {client.name} -> {server.name}\n")
-
-    # Start iperf server
-    server.cmd("killall iperf 2>/dev/null")
-    server.cmd("iperf -s -u &")
-    time.sleep(2)
-
-    results = []
-    start_time = time.time()
-
-    # Start iperf client in background with 10 Mbps bandwidth
-    client.cmd(
-        f"iperf -c {server.IP()} -u -b 10M -t {duration} -i 1 > ./iperf_udp_{client.name}.txt &"
-    )
-
-    # Monitor output
-    while time.time() - start_time < duration + 5:
-        time.sleep(1)
-        timestamp = time.time() - start_time
-
-        # Read iperf output
-        output = client.cmd(f"tail -n 1 ./iperf_udp_{client.name}.txt")
-
-        if "Mbits/sec" in output and "sec" in output:
-            try:
-                # Parse UDP output
-                parts = output.split()
-                for i, part in enumerate(parts):
-                    if "Mbits/sec" in part:
-                        throughput = float(parts[i - 1])
-                        results.append({"time": timestamp, "throughput": throughput})
-                        break
-            except:
-                pass
-
-        if int(timestamp) % 10 == 0:
-            info(f"  UDP: {int(timestamp)}s elapsed\n")
-
-    # Cleanup
-    server.cmd("killall iperf")
-    client.cmd("killall iperf")
-
-    # Save results
-    with open(output_file, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["time", "throughput"])
-        writer.writeheader()
-        writer.writerows(results)
-
-    info(f"*** UDP test completed. Results saved to {output_file}\n")
-
-
-def run_tests(net):
-    """Run all traffic tests sequentially"""
-    info("*** Starting traffic generation tests\n")
-
+    info("*** BASELINE TEST (NO MOBILITY) ***\n")
     # Get nodes
     sta1 = net.get("sta1")
     sta2 = net.get("sta2")
+    sta3 = net.get("sta3")
     c1_h1 = net.get("c1_h1")
     c2_h1 = net.get("c2_h1")
     c3_h1 = net.get("c3_h1")
 
-    duration = 90  # Match mobility duration
+    info("*** Starting iperf servers on hosts\n")
+    # Start TCP servers
+    c1_h1.cmd("iperf -s -p 5001 > /dev/null 2>&1 &")
+    c2_h1.cmd("iperf -s -p 5002 > /dev/null 2>&1 &")
+    c3_h1.cmd("iperf -s -p 5003 > /dev/null 2>&1 &")
 
-    # Run tests sequentially
-    info("\n=== Test 1: ICMP (Ping) ===\n")
-    measure_icmp(net, sta1, c1_h1, duration)
+    # Start UDP servers
+    c1_h1.cmd("iperf -s -u -p 5101 > /dev/null 2>&1 &")
+    c2_h1.cmd("iperf -s -u -p 5102 > /dev/null 2>&1 &")
+    c3_h1.cmd("iperf -s -u -p 5103 > /dev/null 2>&1 &")
 
-    time.sleep(3)
+    time.sleep(2)
 
-    info("\n=== Test 2: TCP (iperf) ===\n")
-    measure_tcp(net, c2_h1, sta1, duration)
+    info("*** Baseline Test: ICMP Traffic (No Mobility)\n")
+    # ICMP tests - 60 seconds
+    sta1.cmd("ping -c 120 -i 0.5 10.0.0.1 > ./tests/baseline_icmp_sta1.txt &")
+    sta2.cmd("ping -c 120 -i 0.5 10.0.0.5 > ./tests/baseline_icmp_sta2.txt &")
+    sta3.cmd("ping -c 120 -i 0.5 10.0.0.9 > ./tests/baseline_icmp_sta3.txt &")
 
-    time.sleep(3)
+    info("*** Baseline Test: TCP Traffic (No Mobility)\n")
+    # TCP tests - 60 seconds
+    sta1.cmd("iperf -c 10.0.0.1 -p 5001 -t 60 -i 1 > ./tests/baseline_tcp_sta1.txt &")
+    sta2.cmd("iperf -c 10.0.0.5 -p 5002 -t 60 -i 1 > ./tests/baseline_tcp_sta2.txt &")
+    sta3.cmd("iperf -c 10.0.0.9 -p 5003 -t 60 -i 1 > ./tests/baseline_tcp_sta3.txt &")
 
-    info("\n=== Test 3: UDP (iperf) ===\n")
-    measure_udp(net, c3_h1, sta1, duration)
-
-    info("\n*** All tests completed\n")
-    info(
-        "*** Results saved to ./icmp_results.csv, ./tcp_results.csv, ./udp_results.csv\n"
+    info("*** Baseline Test: UDP Traffic (No Mobility)\n")
+    # UDP tests - 60 seconds
+    sta1.cmd(
+        "iperf -c 10.0.0.1 -p 5101 -u -b 10M -t 60 -i 1 > ./tests/baseline_udp_sta1.txt &"
     )
+    sta2.cmd(
+        "iperf -c 10.0.0.5 -p 5102 -u -b 10M -t 60 -i 1 > ./tests/baseline_udp_sta2.txt &"
+    )
+    sta3.cmd(
+        "iperf -c 10.0.0.9 -p 5103 -u -b 10M -t 60 -i 1 > ./tests/baseline_udp_sta3.txt &"
+    )
+
+    info("*** Baseline tests running (60 seconds)...\n")
+    time.sleep(65)
+
+    info("*** Baseline tests completed!\n")
+
+    # Kill iperf servers
+    c1_h1.cmd("pkill -9 iperf")
+    c2_h1.cmd("pkill -9 iperf")
+    c3_h1.cmd("pkill -9 iperf")
+    time.sleep(2)
+
+
+def run_mobility_tests(net):
+    """Run tests WITH mobility to measure impact on performance"""
+
+    info("*** MOBILITY TEST (WITH MOBILITY) ***\n")
+    info("*** Waiting for network to stabilize\n")
+    time.sleep(5)
+
+    # Get nodes
+    sta1 = net.get("sta1")
+    sta2 = net.get("sta2")
+    sta3 = net.get("sta3")
+    c1_h1 = net.get("c1_h1")
+    c2_h1 = net.get("c2_h1")
+    c3_h1 = net.get("c3_h1")
+
+    info("*** Starting iperf servers on hosts\n")
+    # Start TCP servers
+    c1_h1.cmd("iperf -s -p 5001 > /dev/null 2>&1 &")
+    c2_h1.cmd("iperf -s -p 5002 > /dev/null 2>&1 &")
+    c3_h1.cmd("iperf -s -p 5003 > /dev/null 2>&1 &")
+
+    # Start UDP servers
+    c1_h1.cmd("iperf -s -u -p 5101 > /dev/null 2>&1 &")
+    c2_h1.cmd("iperf -s -u -p 5102 > /dev/null 2>&1 &")
+    c3_h1.cmd("iperf -s -u -p 5103 > /dev/null 2>&1 &")
+
+    time.sleep(2)
+
+    info("*** Starting Mobility!\n")
+    # Start mobility
+    net.startMobility(time=0)
+
+    # sta1: Domain1 -> Domain3 (moves across all domains)
+    net.mobility(sta1, "start", time=1, position="10,30,0")
+    net.mobility(sta1, "stop", time=60, position="50,30,0")
+
+    # sta2: Domain2 -> Domain3
+    net.mobility(sta2, "start", time=1, position="30,30,0")
+    net.mobility(sta2, "stop", time=60, position="50,25,0")
+
+    # sta3: Domain3 -> Domain1
+    net.mobility(sta3, "start", time=1, position="50,30,0")
+    net.mobility(sta3, "stop", time=60, position="10,25,0")
+
+    net.stopMobility(time=61)
+
+    info("*** Mobility Test: ICMP Traffic (With Mobility)\n")
+    # ICMP tests - 60 seconds
+    sta1.cmd("ping -c 120 -i 0.5 10.0.0.1 > ./tests/mobility_icmp_sta1.txt &")
+    sta2.cmd("ping -c 120 -i 0.5 10.0.0.5 > ./tests/mobility_icmp_sta2.txt &")
+    sta3.cmd("ping -c 120 -i 0.5 10.0.0.9 > ./tests/mobility_icmp_sta3.txt &")
+
+    info("*** Mobility Test: TCP Traffic (With Mobility)\n")
+    # TCP tests - 60 seconds
+    sta1.cmd("iperf -c 10.0.0.1 -p 5001 -t 60 -i 1 > ./tests/mobility_tcp_sta1.txt &")
+    sta2.cmd("iperf -c 10.0.0.5 -p 5002 -t 60 -i 1 > ./tests/mobility_tcp_sta2.txt &")
+    sta3.cmd("iperf -c 10.0.0.9 -p 5003 -t 60 -i 1 > ./tests/mobility_tcp_sta3.txt &")
+
+    info("*** Mobility Test: UDP Traffic (With Mobility)\n")
+    # UDP tests - 60 seconds
+    sta1.cmd(
+        "iperf -c 10.0.0.1 -p 5101 -u -b 10M -t 60 -i 1 > ./tests/mobility_udp_sta1.txt &"
+    )
+    sta2.cmd(
+        "iperf -c 10.0.0.5 -p 5102 -u -b 10M -t 60 -i 1 > ./tests/mobility_udp_sta2.txt &"
+    )
+    sta3.cmd(
+        "iperf -c 10.0.0.9 -p 5103 -u -b 10M -t 60 -i 1 > ./tests/mobility_udp_sta3.txt &"
+    )
+
+    info("*** Mobility tests running (60 seconds)...\n")
+    info("*** Stations are moving between domains!\n")
+    time.sleep(65)
+
+    info("*** Mobility tests completed!\n")
+
+    # Kill iperf servers
+    c1_h1.cmd("pkill -9 iperf")
+    c2_h1.cmd("pkill -9 iperf")
+    c3_h1.cmd("pkill -9 iperf")
 
 
 def topology():
@@ -330,8 +289,28 @@ def topology():
     info("*** Waiting for network to stabilize\n")
     time.sleep(5)
 
-    # Run automated tests
-    run_tests(net)
+    info("\n" + "=" * 70 + "\n")
+    info("*** STARTING AUTOMATED TESTS ***\n")
+    info("=" * 70 + "\n\n")
+
+    # Run baseline tests (no mobility)
+    info("*** Phase 1/2: Running baseline tests (NO mobility)...\n")
+    run_baseline_tests(net)
+
+    info("\n" + "=" * 70 + "\n")
+    info("*** Baseline tests complete! Preparing for mobility tests...\n")
+    info("=" * 70 + "\n\n")
+    time.sleep(3)
+
+    # Run mobility tests
+    info("*** Phase 2/2: Running mobility tests (WITH mobility)...\n")
+    run_mobility_tests(net)
+
+    info("\n" + "=" * 70 + "\n")
+    info("*** ALL TESTS COMPLETED! ***\n")
+    info("*** Results saved in ./tests/ directory\n")
+    info("*** Run plot_results.py to generate comparison graphs\n")
+    info("=" * 70 + "\n\n")
 
     net.stop()
 
