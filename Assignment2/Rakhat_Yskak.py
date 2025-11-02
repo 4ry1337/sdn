@@ -94,23 +94,23 @@ def topology():
     c3_s2.start([c3])
     c3_ap1.start([c3])
 
-    info("*** Enabling mobility\n")
-    net.plotGraph(max_x=100, max_y=100)
-
-    net.startMobility(time=0)
-    # sta1: starts at domain1, moves through domain2, ends at domain3
-    net.mobility(sta1, "start", time=1, position="10,20,0")
-    net.mobility(sta1, "stop", time=60, position="50,20,0")
-
-    # sta2: starts at domain2, moves to domain3
-    net.mobility(sta2, "start", time=1, position="30,20,0")
-    net.mobility(sta2, "stop", time=60, position="50,25,0")
-
-    # sta3: starts at domain3, moves to domain1
-    net.mobility(sta3, "start", time=1, position="50,20,0")
-    net.mobility(sta3, "stop", time=60, position="10,25,0")
-
-    net.stopMobility(time=61)
+    # info("*** Enabling mobility\n")
+    # net.plotGraph(max_x=100, max_y=100)
+    #
+    # net.startMobility(time=0)
+    # # sta1: starts at domain1, moves through domain2, ends at domain3
+    # net.mobility(sta1, "start", time=1, position="10,20,0")
+    # net.mobility(sta1, "stop", time=60, position="50,20,0")
+    #
+    # # sta2: starts at domain2, moves to domain3
+    # net.mobility(sta2, "start", time=1, position="30,20,0")
+    # net.mobility(sta2, "stop", time=60, position="50,25,0")
+    #
+    # # sta3: starts at domain3, moves to domain1
+    # net.mobility(sta3, "start", time=1, position="50,20,0")
+    # net.mobility(sta3, "stop", time=60, position="10,25,0")
+    #
+    # net.stopMobility(time=61)
 
     info("*** Starting CLI\n")
     CLI(net)
