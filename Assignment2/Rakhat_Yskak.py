@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 from mn_wifi.net import Mininet_wifi
-from mn_wifi.cli import CLI_wifi
+from mn_wifi.cli import CLI
 from mininet.node import RemoteController
 from mininet.log import setLogLevel, info
 
@@ -110,7 +110,7 @@ def topology():
     net.stopMobility(time=61)
 
     info("*** Starting CLI\n")
-    CLI_wifi(net)
+    CLI(net)
 
     net.stop()
 
