@@ -26,6 +26,7 @@ def topology():
     c1_s2 = net.addSwitch("c1_s2")
     c1_h1 = net.addHost("c1_h1", ip="10.0.0.1/24")
     c1_h2 = net.addHost("c1_h2", ip="10.0.0.2/24")
+    sta1 = net.addStation("sta1", ip="10.0.0.13/24", position="10,30,0")
 
     info("*** Creating Domain 2\n")
     c2_ap1 = net.addAccessPoint(
@@ -35,6 +36,7 @@ def topology():
     c2_s2 = net.addSwitch("c2_s2")
     c2_h1 = net.addHost("c2_h1", ip="10.0.0.5/24")
     c2_h2 = net.addHost("c2_h2", ip="10.0.0.6/24")
+    sta2 = net.addStation("sta2", ip="10.0.0.14/24", position="30,30,0")
 
     info("*** Creating Domain 3\n")
     c3_ap1 = net.addAccessPoint(
@@ -44,14 +46,10 @@ def topology():
     c3_s2 = net.addSwitch("c3_s2")
     c3_h1 = net.addHost("c3_h1", ip="10.0.0.9/24")
     c3_h2 = net.addHost("c3_h2", ip="10.0.0.10/24")
-
-    info("*** Creating Mobile Stations\n")
-    sta1 = net.addStation("sta1", ip="10.0.0.13/24", position="10,20,0")
-    sta2 = net.addStation("sta2", ip="10.0.0.14/24", position="30,20,0")
-    sta3 = net.addStation("sta3", ip="10.0.0.15/24", position="50,20,0")
+    sta3 = net.addStation("sta3", ip="10.0.0.15/24", position="50,30,0")
 
     info("*** Configuring Propagation Model\n")
-    net.setPropagationModel(model="logDistance", exp=4)
+    net.setPropagationModel(model="logDistance", exp=3)
 
     info("*** Creating Domain 1 Internal Links\n")
     net.addLink(c1_ap1, c1_s1)
