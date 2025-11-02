@@ -67,6 +67,13 @@ def topology():
     info("*** Configuring Propagation Model\n")
     net.setPropagationModel(model="logDistance", exp=3)
 
+    info("*** Configuring WiFi nodes\n")
+    net.configureNodes()
+
+    net.addLink(sta1, c1_ap1)
+    net.addLink(sta2, c2_ap1)
+    net.addLink(sta3, c3_ap1)
+
     info("*** Creating Domain 1 Internal Links\n")
     net.addLink(c1_ap1, c1_s1)
     net.addLink(c1_s1, c1_s2)
@@ -89,9 +96,6 @@ def topology():
     net.addLink(c1_s2, c2_s1)  # Domain 1 <-> Domain 2
     net.addLink(c2_s2, c3_s1)  # Domain 2 <-> Domain 3
 
-    info("*** Configuring WiFi nodes\n")
-    net.configureWifiNodes()
-
     info("*** Building network\n")
     net.build()
 
@@ -111,6 +115,30 @@ def topology():
     c3_s1.start([c3])
     c3_s2.start([c3])
     c3_ap1.start([c3])
+
+    info("*** Installing flows on APs for traffic forwarding\n")
+    # Install flows on APs to forward traffic (like the example does)
+    for ap in [c1_ap1, c2_ap1, c3_ap1]:
+        ap.cmd(
+            'ovs-ofctl add-flow {} "priority=0,arp,in_port=1,actions=output:in_port,normal"'.format(
+                ap.name
+            )
+        )
+        ap.cmd(
+            'ovs-ofctl add-flow {} "priority=0,icmp,in_port=1,actions=output:in_port,normal"'.format(
+                ap.name
+            )
+        )
+        ap.cmd(
+            'ovs-ofctl add-flow {} "priority=0,udp,in_port=1,actions=output:in_port,normal"'.format(
+                ap.name
+            )
+        )
+        ap.cmd(
+            'ovs-ofctl add-flow {} "priority=0,tcp,in_port=1,actions=output:in_port,normal"'.format(
+                ap.name
+            )
+        )
 
     # info("*** Enabling mobility\n")
     # net.plotGraph(max_x=100, max_y=100)
