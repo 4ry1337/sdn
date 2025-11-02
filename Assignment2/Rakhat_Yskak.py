@@ -67,6 +67,9 @@ def topology():
     info("*** Configuring Propagation Model\n")
     net.setPropagationModel(model="logDistance", exp=3)
 
+    info("*** Configuring WiFi nodes\n")
+    net.configureNodes()
+
     net.addLink(sta1, c1_ap1)
     net.addLink(sta2, c2_ap1)
     net.addLink(sta3, c3_ap1)
@@ -92,9 +95,6 @@ def topology():
     info("*** Creating Inter-Domain Links\n")
     net.addLink(c1_s2, c2_s1)  # Domain 1 <-> Domain 2
     net.addLink(c2_s2, c3_s1)  # Domain 2 <-> Domain 3
-
-    info("*** Configuring WiFi nodes\n")
-    net.configureWifiNodes()
 
     info("*** Building network\n")
     net.build()
