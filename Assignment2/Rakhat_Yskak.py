@@ -13,13 +13,12 @@ from datetime import datetime
 HOST = "192.168.56.1"
 PORTS = [6633, 6634, 6635]
 
-# Global data storage
-results = {"icmp": [], "tcp": [], "udp": []}
 
-
-def measure_icmp(net, src, dst, duration=90):
+def measure_icmp(net, src, dst, duration=90, output_file="./icmp_results.csv"):
     """Continuously ping and measure latency"""
     info(f"*** Starting ICMP test: {src.name} -> {dst.IP()}\n")
+
+    results = []
     start_time = time.time()
 
     while time.time() - start_time < duration:
@@ -38,157 +37,169 @@ def measure_icmp(net, src, dst, duration=90):
             latency = None
             packet_loss = 1
 
-        results["icmp"].append(
+        results.append(
             {"time": timestamp, "latency": latency, "packet_loss": packet_loss}
         )
 
-        time.sleep(1)  # Ping every second
+        if int(timestamp) % 10 == 0:
+            info(f"  ICMP: {int(timestamp)}s elapsed\n")
 
-    info(f"*** ICMP test completed\n")
-
-
-def measure_tcp(net, server, client, duration=90):
-    """Run iperf TCP test and measure throughput"""
-    info(f"*** Starting TCP iperf server on {server.name}\n")
-    server.cmd("iperf -s -i 1 > ./iperf_server_tcp.txt &")
-    time.sleep(2)
-
-    info(f"*** Starting TCP iperf client on {client.name}\n")
-    start_time = time.time()
-
-    # Run iperf client
-    client.cmd(f"iperf -c {server.IP()} -t {duration} -i 1 > ./iperf_client_tcp.txt &")
-
-    # Parse output periodically
-    while time.time() - start_time < duration:
         time.sleep(1)
-        timestamp = time.time() - start_time
 
-        # Read iperf output
-        try:
-            output = client.cmd("tail -n 2 ./iperf_client_tcp.txt")
-            if "Mbits/sec" in output:
-                lines = output.strip().split("\n")
-                for line in lines:
-                    if "Mbits/sec" in line and "sec" in line:
-                        parts = line.split()
-                        throughput = float(parts[-2])
-                        results["tcp"].append(
-                            {"time": timestamp, "throughput": throughput}
-                        )
-                        break
-        except:
-            pass
-
-    # Kill iperf processes
-    server.cmd("killall iperf")
-    client.cmd("killall iperf")
-    info(f"*** TCP test completed\n")
-
-
-def measure_udp(net, server, client, duration=90):
-    """Run iperf UDP test and measure throughput"""
-    info(f"*** Starting UDP iperf server on {server.name}\n")
-    server.cmd("iperf -s -u -i 1 > ./iperf_server_udp.txt &")
-    time.sleep(2)
-
-    info(f"*** Starting UDP iperf client on {client.name}\n")
-    start_time = time.time()
-
-    # Run iperf client with UDP
-    client.cmd(
-        f"iperf -c {server.IP()} -u -b 10M -t {duration} -i 1 > ./iperf_client_udp.txt &"
-    )
-
-    # Parse output periodically
-    while time.time() - start_time < duration:
-        time.sleep(1)
-        timestamp = time.time() - start_time
-
-        # Read iperf output
-        try:
-            output = client.cmd("tail -n 2 ./iperf_client_udp.txt")
-            if "Mbits/sec" in output:
-                lines = output.strip().split("\n")
-                for line in lines:
-                    if "Mbits/sec" in line and "sec" in line:
-                        parts = line.split()
-                        throughput = float(parts[-4])
-                        results["udp"].append(
-                            {"time": timestamp, "throughput": throughput}
-                        )
-                        break
-        except:
-            pass
-
-    # Kill iperf processes
-    server.cmd("killall iperf")
-    client.cmd("killall iperf")
-    info(f"*** UDP test completed\n")
-
-
-def save_results():
-    """Save results to CSV files"""
-    info("*** Saving results to CSV files\n")
-
-    # Save ICMP results
-    with open("./icmp_results.csv", "w", newline="") as f:
+    # Save results
+    with open(output_file, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=["time", "latency", "packet_loss"])
         writer.writeheader()
-        writer.writerows(results["icmp"])
+        writer.writerows(results)
 
-    # Save TCP results
-    with open("./tcp_results.csv", "w", newline="") as f:
+    info(f"*** ICMP test completed. Results saved to {output_file}\n")
+
+
+def measure_tcp(net, server, client, duration=90, output_file="./tcp_results.csv"):
+    """Run iperf TCP test and measure throughput"""
+    info(f"*** Starting TCP test: {client.name} -> {server.name}\n")
+
+    # Start iperf server
+    server.cmd("killall iperf 2>/dev/null")
+    server.cmd("iperf -s &")
+    time.sleep(2)
+
+    results = []
+    start_time = time.time()
+
+    # Start iperf client in background
+    client.cmd(
+        f"iperf -c {server.IP()} -t {duration} -i 1 > ./iperf_tcp_{client.name}.txt &"
+    )
+
+    # Monitor output
+    while time.time() - start_time < duration + 5:
+        time.sleep(1)
+        timestamp = time.time() - start_time
+
+        # Read iperf output
+        output = client.cmd(f"tail -n 1 ./iperf_tcp_{client.name}.txt")
+
+        if "Mbits/sec" in output and "sec" in output:
+            try:
+                # Parse: [ ID] Interval       Transfer     Bandwidth
+                parts = output.split()
+                for i, part in enumerate(parts):
+                    if "Mbits/sec" in part or (
+                        i > 0
+                        and parts[i - 1].replace(".", "").isdigit()
+                        and "Mbits/sec" in parts[i + 1]
+                        if i + 1 < len(parts)
+                        else False
+                    ):
+                        throughput = (
+                            float(parts[i - 1]) if "Mbits/sec" in part else float(part)
+                        )
+                        results.append({"time": timestamp, "throughput": throughput})
+                        break
+            except:
+                pass
+
+        if int(timestamp) % 10 == 0:
+            info(f"  TCP: {int(timestamp)}s elapsed\n")
+
+    # Cleanup
+    server.cmd("killall iperf")
+    client.cmd("killall iperf")
+
+    # Save results
+    with open(output_file, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=["time", "throughput"])
         writer.writeheader()
-        writer.writerows(results["tcp"])
+        writer.writerows(results)
 
-    # Save UDP results
-    with open("./udp_results.csv", "w", newline="") as f:
+    info(f"*** TCP test completed. Results saved to {output_file}\n")
+
+
+def measure_udp(net, server, client, duration=90, output_file="./udp_results.csv"):
+    """Run iperf UDP test and measure throughput"""
+    info(f"*** Starting UDP test: {client.name} -> {server.name}\n")
+
+    # Start iperf server
+    server.cmd("killall iperf 2>/dev/null")
+    server.cmd("iperf -s -u &")
+    time.sleep(2)
+
+    results = []
+    start_time = time.time()
+
+    # Start iperf client in background with 10 Mbps bandwidth
+    client.cmd(
+        f"iperf -c {server.IP()} -u -b 10M -t {duration} -i 1 > ./iperf_udp_{client.name}.txt &"
+    )
+
+    # Monitor output
+    while time.time() - start_time < duration + 5:
+        time.sleep(1)
+        timestamp = time.time() - start_time
+
+        # Read iperf output
+        output = client.cmd(f"tail -n 1 ./iperf_udp_{client.name}.txt")
+
+        if "Mbits/sec" in output and "sec" in output:
+            try:
+                # Parse UDP output
+                parts = output.split()
+                for i, part in enumerate(parts):
+                    if "Mbits/sec" in part:
+                        throughput = float(parts[i - 1])
+                        results.append({"time": timestamp, "throughput": throughput})
+                        break
+            except:
+                pass
+
+        if int(timestamp) % 10 == 0:
+            info(f"  UDP: {int(timestamp)}s elapsed\n")
+
+    # Cleanup
+    server.cmd("killall iperf")
+    client.cmd("killall iperf")
+
+    # Save results
+    with open(output_file, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=["time", "throughput"])
         writer.writeheader()
-        writer.writerows(results["udp"])
+        writer.writerows(results)
 
-    info("*** Results saved to ./*_results.csv\n")
+    info(f"*** UDP test completed. Results saved to {output_file}\n")
 
 
 def run_tests(net):
-    """Run all traffic tests concurrently"""
+    """Run all traffic tests sequentially"""
     info("*** Starting traffic generation tests\n")
 
     # Get nodes
     sta1 = net.get("sta1")
+    sta2 = net.get("sta2")
     c1_h1 = net.get("c1_h1")
     c2_h1 = net.get("c2_h1")
     c3_h1 = net.get("c3_h1")
 
     duration = 90  # Match mobility duration
 
-    # Create threads for concurrent tests
-    threads = []
+    # Run tests sequentially
+    info("\n=== Test 1: ICMP (Ping) ===\n")
+    measure_icmp(net, sta1, c1_h1, duration)
 
-    # ICMP test: sta1 pings c1_h1 continuously
-    t1 = threading.Thread(target=measure_icmp, args=(net, sta1, c1_h1, duration))
-    threads.append(t1)
+    time.sleep(3)
 
-    # TCP test: sta1 as client, c2_h1 as server
-    t2 = threading.Thread(target=measure_tcp, args=(net, c2_h1, sta1, duration))
-    threads.append(t2)
+    info("\n=== Test 2: TCP (iperf) ===\n")
+    measure_tcp(net, c2_h1, sta1, duration)
 
-    # UDP test: sta1 as client, c3_h1 as server
-    t3 = threading.Thread(target=measure_udp, args=(net, c3_h1, sta1, duration))
-    threads.append(t3)
+    time.sleep(3)
 
-    # Start all tests
-    for t in threads:
-        t.start()
+    info("\n=== Test 3: UDP (iperf) ===\n")
+    measure_udp(net, c3_h1, sta1, duration)
 
-    # Wait for all tests to complete
-    for t in threads:
-        t.join()
-
-    info("*** All tests completed\n")
-    save_results()
+    info("\n*** All tests completed\n")
+    info(
+        "*** Results saved to ./icmp_results.csv, ./tcp_results.csv, ./udp_results.csv\n"
+    )
 
 
 def topology():
