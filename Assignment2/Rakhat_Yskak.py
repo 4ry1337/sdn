@@ -26,8 +26,6 @@ def topology():
         channel="1",
         position="10,30,0",
         range=120,
-        failMode="standalone",
-        datapath="user",
     )
     c1_s1 = net.addSwitch("c1_s1")
     c1_s2 = net.addSwitch("c1_s2")
@@ -42,8 +40,6 @@ def topology():
         channel="6",
         position="30,30,0",
         range=120,
-        failMode="standalone",
-        datapath="user",
     )
     c2_s1 = net.addSwitch("c2_s1")
     c2_s2 = net.addSwitch("c2_s2")
@@ -58,8 +54,6 @@ def topology():
         channel="11",
         position="50,30,0",
         range=120,
-        failMode="standalone",
-        datapath="user",
     )
     c3_s1 = net.addSwitch("c3_s1")
     c3_s2 = net.addSwitch("c3_s2")
@@ -100,6 +94,10 @@ def topology():
 
     info("*** Building network\n")
     net.build()
+
+    info("*** Starting controllers\n")
+    for controller in net.controllers:
+        controller.start()
 
     info("*** Assigning controllers to domains\n")
     c1_s1.start([c1])
