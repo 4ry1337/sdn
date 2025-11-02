@@ -20,8 +20,16 @@ def topology():
 
     info("*** Creating Domain 1\n")
     c1_ap1 = net.addAccessPoint(
-        "c1_ap1", ssid="domain1", mode="g", channel="1", position="10,30,0", range=40
+        "c1_ap1",
+        ssid="domain1",
+        mode="g",
+        channel="1",
+        position="10,30,0",
+        range=40,
+        failMode="standalone",
+        datapath="user",
     )
+
     c1_s1 = net.addSwitch("c1_s1")
     c1_s2 = net.addSwitch("c1_s2")
     c1_h1 = net.addHost("c1_h1", ip="10.0.0.1/24")
@@ -30,8 +38,16 @@ def topology():
 
     info("*** Creating Domain 2\n")
     c2_ap1 = net.addAccessPoint(
-        "c2_ap1", ssid="domain2", mode="g", channel="6", position="30,30,0", range=40
+        "c2_ap1",
+        ssid="domain2",
+        mode="g",
+        channel="6",
+        position="30,30,0",
+        range=40,
+        failMode="standalone",
+        datapath="user",
     )
+
     c2_s1 = net.addSwitch("c2_s1")
     c2_s2 = net.addSwitch("c2_s2")
     c2_h1 = net.addHost("c2_h1", ip="10.0.0.5/24")
@@ -40,7 +56,14 @@ def topology():
 
     info("*** Creating Domain 3\n")
     c3_ap1 = net.addAccessPoint(
-        "c3_ap1", ssid="domain3", mode="g", channel="11", position="50,30,0", range=40
+        "c3_ap1",
+        ssid="domain3",
+        mode="g",
+        channel="11",
+        position="50,30,0",
+        range=40,
+        failMode="standalone",
+        datapath="user",
     )
     c3_s1 = net.addSwitch("c3_s1")
     c3_s2 = net.addSwitch("c3_s2")
