@@ -25,16 +25,14 @@ def topology():
         mode="g",
         channel="1",
         position="10,30,0",
-        range=40,
+        range=120,
         failMode="standalone",
         datapath="user",
     )
-
     c1_s1 = net.addSwitch("c1_s1")
     c1_s2 = net.addSwitch("c1_s2")
     c1_h1 = net.addHost("c1_h1", ip="10.0.0.1/24")
     c1_h2 = net.addHost("c1_h2", ip="10.0.0.2/24")
-    sta1 = net.addStation("sta1", ip="10.0.0.13/24", position="10,30,0")
 
     info("*** Creating Domain 2\n")
     c2_ap1 = net.addAccessPoint(
@@ -43,16 +41,14 @@ def topology():
         mode="g",
         channel="6",
         position="30,30,0",
-        range=40,
+        range=120,
         failMode="standalone",
         datapath="user",
     )
-
     c2_s1 = net.addSwitch("c2_s1")
     c2_s2 = net.addSwitch("c2_s2")
     c2_h1 = net.addHost("c2_h1", ip="10.0.0.5/24")
     c2_h2 = net.addHost("c2_h2", ip="10.0.0.6/24")
-    sta2 = net.addStation("sta2", ip="10.0.0.14/24", position="30,30,0")
 
     info("*** Creating Domain 3\n")
     c3_ap1 = net.addAccessPoint(
@@ -61,7 +57,7 @@ def topology():
         mode="g",
         channel="11",
         position="50,30,0",
-        range=40,
+        range=120,
         failMode="standalone",
         datapath="user",
     )
@@ -69,6 +65,9 @@ def topology():
     c3_s2 = net.addSwitch("c3_s2")
     c3_h1 = net.addHost("c3_h1", ip="10.0.0.9/24")
     c3_h2 = net.addHost("c3_h2", ip="10.0.0.10/24")
+
+    sta1 = net.addStation("sta1", ip="10.0.0.13/24", position="10,30,0")
+    sta2 = net.addStation("sta2", ip="10.0.0.14/24", position="30,30,0")
     sta3 = net.addStation("sta3", ip="10.0.0.15/24", position="50,30,0")
 
     info("*** Configuring Propagation Model\n")
