@@ -1,14 +1,11 @@
 #!/usr/bin/python
 
+# from mn_wifi.cli import CLI
 from mn_wifi.net import Mininet_wifi
-from mn_wifi.cli import CLI
 from mininet.node import RemoteController
 from mininet.log import setLogLevel, info
 import time
-import threading
-import subprocess
 import csv
-from datetime import datetime
 
 HOST = "192.168.56.1"
 PORTS = [6633, 6634, 6635]
