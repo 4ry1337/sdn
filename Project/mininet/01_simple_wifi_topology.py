@@ -11,14 +11,17 @@ Topology:
 
 Usage:
     sudo python 01_simple_wifi_topology.py
+    sudo python 01_simple_wifi_topology.py --controller 192.168.1.100
+    sudo python 01_simple_wifi_topology.py --controller localhost --port 6653
 """
 
+import argparse
 from mininet.net import Mininet
 from mininet.node import RemoteController, OVSSwitch
 from mininet.cli import CLI
 from mininet.log import setLogLevel, info
 
-def simpleTopology():
+def simpleTopology(controller_ip='127.0.0.1', controller_port=6653):
     """Create a simple topology with 3 switches and 4 hosts"""
     
     net = Mininet(
@@ -28,12 +31,12 @@ def simpleTopology():
     )
 
     info('*** Adding controller\n')
-    # Connect to Floodlight controller in Docker
+    # Connect to Floodlight controller
     controller = net.addController(
         'c0',
         controller=RemoteController,
-        ip='127.0.0.1',
-        port=6653
+        ip=controller_ip,
+        port=controller_port
     )
 
     info('*** Adding switches\n')
@@ -67,7 +70,7 @@ def simpleTopology():
     info('                    h2           h3\n')
     info('                 (10.0.0.2)   (10.0.0.3)\n')
     info('\n')
-    info('*** Controller: Floodlight at 127.0.0.1:6653\n')
+    info('*** Controller: Floodlight at %s:%d\n' % (controller_ip, controller_port))
     info('*** Web UI: http://localhost:3000\n')
     info('*** Floodlight API: http://localhost:8080\n')
     info('\n')
@@ -86,5 +89,21 @@ def simpleTopology():
     net.stop()
 
 if __name__ == '__main__':
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='Simple Mininet topology for FloodAna')
+    parser.add_argument(
+        '--controller', '-c',
+        default='127.0.0.1',
+        help='Floodlight controller IP address (default: 127.0.0.1)'
+    )
+    parser.add_argument(
+        '--port', '-p',
+        type=int,
+        default=6653,
+        help='Floodlight controller port (default: 6653)'
+    )
+    args = parser.parse_args()
+    
     setLogLevel('info')
-    simpleTopology()
+    info('*** Starting topology with controller at %s:%d\n' % (args.controller, args.port))
+    simpleTopology(controller_ip=args.controller, controller_port=args.port)
