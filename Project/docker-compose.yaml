@@ -1,0 +1,7 @@
+services:
+  floodlight:
+    image: piyushk2001/floodlight-controller:latest
+    container_name: floodana-controller
+    ports:
+      - "6653:6653"
+      - "8080:8080"

@@ -1,0 +1,17 @@
+FROM oven/bun:1
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json bun.lockb* ./
+
+# Install dependencies
+RUN bun install
+
+# Copy source (volumes will override in dev)
+COPY . .
+
+EXPOSE 3000
+
+# Development mode
+CMD ["bun", "run", "dev"]

@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  floodlight:
+    image: piyushk2001/floodlight-controller:latest
+    container_name: floodana-controller
+    ports:
+      - "6653:6653"
+      - "8080:8080"
+    restart: unless-stopped
+    networks:
+      - sdn-network
+
+  floodana-dev:
+    build:
+      context: ./floodana
+      dockerfile: Dockerfile.dev
+    container_name: floodana-frontend-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./floodana/src:/app/src:cached
+      - ./floodana/public:/app/public:cached
+    environment:
+      - NEXT_PUBLIC_FLOODLIGHT_URL=http://floodlight:8080
+      - NODE_ENV=development
+    depends_on:
+      - floodlight
+    networks:
+      - sdn-network
+    command: bun run dev
+
+networks:
+  sdn-network:
+    driver: bridge
