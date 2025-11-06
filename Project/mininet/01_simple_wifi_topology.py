@@ -1,8 +1,6 @@
-#!/usr/bin/python
-
 """
 Simple Mininet topology with 3 switches and 4 hosts
-for testing FloodAna SDN visualizer.
+for testing OpenVis SDN visualizer.
 
 Topology:
     h1 --- s1 --- s2 --- s3 --- h4
@@ -90,7 +88,7 @@ def simpleTopology(controller_ip='127.0.0.1', controller_port=6653):
 
 if __name__ == '__main__':
     # Parse command line arguments
-    parser = argparse.ArgumentParser(description='Simple Mininet topology for FloodAna')
+    parser = argparse.ArgumentParser(description='Simple Mininet topology')
     parser.add_argument(
         '--controller', '-c',
         default='127.0.0.1',

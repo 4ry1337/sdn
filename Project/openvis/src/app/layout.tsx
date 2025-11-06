@@ -12,7 +12,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Floodana",
+    default: "OpenVis",
     template: `%s | App`,
   },
   description: "SDN Network Visualizor",

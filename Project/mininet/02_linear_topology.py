@@ -1,8 +1,6 @@
-#!/usr/bin/python
-
 """
 Linear Mininet topology with configurable size
-for testing FloodAna SDN visualizer.
+for testing OpenVis SDN visualizer.
 
 Topology:
     h1 --- s1 --- s2 --- s3 --- ... --- sN --- hN
@@ -82,7 +80,7 @@ def linearTopology(num_switches=4, controller_ip='127.0.0.1', controller_port=66
     net.stop()
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Linear Mininet topology for FloodAna')
+    parser = argparse.ArgumentParser(description='Linear Mininet topology')
     parser.add_argument(
         '--switches', '-s',
         type=int,

@@ -1,6 +1,4 @@
-import { Separator } from "@/shared/ui/separator";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarInset, SidebarProvider, SidebarRail, SidebarTrigger } from "@/shared/ui/sidebar";
-import { URLInputWidget } from "@/widgets/URLInputWidget";
 
 export default function SidebarLayout({
   children,
@@ -13,7 +11,7 @@ export default function SidebarLayout({
         <header className="bg-background sticky top-0 z-50 flex w-full items-center border-b">
           <div className="flex h-(--header-height) w-full items-center gap-2 px-4">
             <a href="#">
-              <h1 className="text-base font-medium">FloodAna</h1>
+              <h1 className="text-base font-medium">OpenVis</h1>
             </a>
             <SidebarTrigger className="ml-auto rotate-180" />
           </div>

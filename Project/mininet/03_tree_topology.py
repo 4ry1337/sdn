@@ -1,8 +1,6 @@
-#!/usr/bin/python
-
 """
 Tree Mininet topology with configurable depth and fanout
-for testing FloodAna SDN visualizer.
+for testing OpenVis SDN visualizer.
 
 Topology:
                     s1 (root)
@@ -121,7 +119,7 @@ def treeTopology(depth=2, fanout=2, controller_ip='127.0.0.1', controller_port=6
     net.stop()
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Tree Mininet topology for FloodAna')
+    parser = argparse.ArgumentParser(description='Tree Mininet topology')
     parser.add_argument(
         '--depth', '-d',
         type=int,
