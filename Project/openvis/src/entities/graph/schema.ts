@@ -14,4 +14,3 @@ export const LinkSchema = z.object({
   target: z.string(),
   metadata: z.record(z.string(), z.unknown()).optional(), // ✅ Fixed
 });
-

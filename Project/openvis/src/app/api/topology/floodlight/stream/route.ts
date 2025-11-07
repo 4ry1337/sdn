@@ -1,13 +1,11 @@
+import { fetch_floodlight_topology } from "@/features/topology/floodlight/read";
 import { NextRequest } from "next/server";
 import z from "zod";
-import { ControllerTypeSchema } from "@/entities/controller";
-import { fetch_topology } from "@/features/topology/read/api";
 
 const default_interval = 5000
 
-const SteamTopologyQuerySchema = z.object({
+const SteamFloodlightTopologyQuerySchema = z.object({
   url: z.url('Invalid controller URL'),
-  type: ControllerTypeSchema,
   i: z.number().nullable()
 })
 
@@ -19,7 +17,7 @@ export async function GET(req: NextRequest) {
     i: search_params.get("i") ? Number(search_params.get("i")) : null
   };
 
-  const validation = SteamTopologyQuerySchema.safeParse(params);
+  const validation = SteamFloodlightTopologyQuerySchema.safeParse(params);
 
   if (!validation.success) {
     return new Response(
@@ -31,7 +29,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const { url, type, i } = validation.data;
+  const { url, i } = validation.data;
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
@@ -42,7 +40,7 @@ export async function GET(req: NextRequest) {
 
       const intervalId = setInterval(async () => {
         try {
-          const topology = await fetch_topology(url, type);
+          const topology = await fetch_floodlight_topology(url);
           sendEvent(topology);
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';

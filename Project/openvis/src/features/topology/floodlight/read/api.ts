@@ -1,18 +1,8 @@
 import z from "zod";
-import { ControllerType } from "@/entities/controller/types";
-import { FloodlightDeviceSchema, FloodlightLinkSchema, FloodlightSwitchSchema } from "@/entities/floodlight";
-import { Link, Node } from "./types";
+import { Link, Node } from "@/entities/graph";
+import { FloodlightDeviceSchema, FloodlightLinkSchema, FloodlightSwitchSchema } from "./schema";
 
-export async function fetch_topology(url: string, type: ControllerType) {
-  switch (type) {
-    case 'floodlight':
-      return await fetch_floodlight_topology(url)
-    default:
-      throw new Error(`Unsupported controller type: ${type}`);
-  }
-}
-
-async function fetch_floodlight_topology(url: string) {
+export async function fetch_floodlight_topology(url: string) {
   const [switches_request, links_request, devices_request] = await Promise.all([
     fetch(`${url}/wm/core/controller/switches/json`, {
       signal: AbortSignal.timeout(5000),

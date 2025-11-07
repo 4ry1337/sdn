@@ -1,7 +1,7 @@
 "use client"
 
+import { Node, Link } from '@/entities/graph';
 import * as d3 from 'd3';
-import type { Node, Link } from '@/features/topology/read/types';
 import { createContext, useCallback, useContext, useRef, useState } from 'react';
 
 interface SimulationNode extends d3.SimulationNodeDatum, Node {
