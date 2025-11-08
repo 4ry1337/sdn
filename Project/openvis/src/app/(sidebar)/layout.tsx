@@ -1,5 +1,5 @@
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuAction, SidebarMenuItem, SidebarProvider, SidebarTrigger } from "@/shared/ui/sidebar";
-import { ChargeStrengthControls, ForceStrengthControls, LinkDistanceControls } from "@/widgets/topology_viewer";
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarProvider, SidebarTrigger } from "@/shared/ui/sidebar";
+import { TopologyControls, TopologyViewerProvider } from "@/widgets/topology_viewer";
 
 export default function SidebarLayout({
   children,
@@ -7,8 +7,9 @@ export default function SidebarLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="[--header-height:calc(--spacing(14))]">
-      <SidebarProvider
+    <TopologyViewerProvider>
+      <div className="[--header-height:calc(--spacing(14))]">
+        <SidebarProvider
         style={
           {
             "--sidebar-width": "24rem",
@@ -36,17 +37,7 @@ export default function SidebarLayout({
               <SidebarGroup>
                 <SidebarGroupLabel>Graph Controls</SidebarGroupLabel>
                 <SidebarGroupContent>
-                  <SidebarMenu>
-                    <SidebarMenuItem>
-                      <ForceStrengthControls />
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                      <LinkDistanceControls />
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                      <ChargeStrengthControls />
-                    </SidebarMenuItem>
-                  </SidebarMenu>
+                  <TopologyControls />
                 </SidebarGroupContent>
               </SidebarGroup>
             </SidebarContent>
@@ -56,6 +47,7 @@ export default function SidebarLayout({
         </div>
       </SidebarProvider>
     </div>
+    </TopologyViewerProvider>
   )
 }
 

@@ -2,9 +2,10 @@ import { fetch_floodlight_topology } from "@/features/topology/floodlight/read";
 import { NextRequest } from "next/server";
 import z from "zod";
 
-const default_interval = 5000
+const default_interval = 5000;
+const max_consecutive_errors = 3;
 
-const SteamFloodlightTopologyQuerySchema = z.object({
+const StreamFloodlightTopologyQuerySchema = z.object({
   url: z.url('Invalid controller URL'),
   i: z.number().nullable()
 })
@@ -13,44 +14,108 @@ export async function GET(req: NextRequest) {
   const search_params = req.nextUrl.searchParams;
   const params = {
     url: search_params.get("url"),
-    type: search_params.get("type"),
     i: search_params.get("i") ? Number(search_params.get("i")) : null
   };
 
-  const validation = SteamFloodlightTopologyQuerySchema.safeParse(params);
+  const validation = StreamFloodlightTopologyQuerySchema.safeParse(params);
 
   if (!validation.success) {
     return new Response(
       JSON.stringify({
-        error: 'Invalid parameters',
-        details: validation.error.message
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid parameters',
+          details: validation.error.issues
+        }
       }),
       { status: 400, headers: { 'Content-Type': 'application/json' } }
     );
   }
 
   const { url, i } = validation.data;
+  const interval = i || default_interval;
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
-      const sendEvent = (data: unknown) => {
-        controller.enqueue(encoder.encode(JSON.stringify(data)));
+      let consecutiveErrors = 0;
+      let intervalId: NodeJS.Timeout | null = null;
+
+      const sendEvent = (eventType: string, data: unknown) => {
+        const message = `event: ${eventType}\ndata: ${JSON.stringify(data)}\n\n`;
+        controller.enqueue(encoder.encode(message));
       };
 
-      const intervalId = setInterval(async () => {
+      const cleanup = () => {
+        if (intervalId) {
+          clearInterval(intervalId);
+          intervalId = null;
+        }
+        controller.close();
+      };
+
+      // Initial connection test
+      try {
+        const initialTopology = await fetch_floodlight_topology(url);
+        sendEvent('topology', initialTopology);
+        consecutiveErrors = 0;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error("[STREAM] Initial connection failed:", { url, error: errorMessage });
+
+        sendEvent('error', {
+          code: 'INITIAL_CONNECTION_FAILED',
+          message: errorMessage,
+          url
+        });
+        cleanup();
+        return;
+      }
+
+      // Start polling
+      intervalId = setInterval(async () => {
         try {
           const topology = await fetch_floodlight_topology(url);
-          sendEvent(topology);
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-          sendEvent({ error: errorMessage });
-        }
-      }, i || default_interval);
+          sendEvent('topology', topology);
+          consecutiveErrors = 0; // Reset on success
 
+        } catch (error) {
+          consecutiveErrors++;
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+          console.error(`[STREAM] Fetch error (${consecutiveErrors}/${max_consecutive_errors}):`, {
+            url,
+            error: errorMessage,
+            timestamp: new Date().toISOString()
+          });
+
+          // Send error event
+          sendEvent('error', {
+            code: 'FETCH_ERROR',
+            message: errorMessage,
+            url,
+            consecutiveErrors,
+            maxErrors: max_consecutive_errors
+          });
+
+          // Close stream after too many consecutive errors
+          if (consecutiveErrors >= max_consecutive_errors) {
+            console.error("[STREAM] Max consecutive errors reached, closing stream");
+            sendEvent('error', {
+              code: 'MAX_ERRORS_REACHED',
+              message: `Stream closed after ${max_consecutive_errors} consecutive errors`,
+              lastError: errorMessage,
+              url
+            });
+            cleanup();
+          }
+        }
+      }, interval);
+
+      // Cleanup on client disconnect
       req.signal.addEventListener('abort', () => {
-        clearInterval(intervalId);
-        controller.close();
+        console.log("[STREAM] Client disconnected, cleaning up");
+        cleanup();
       });
     },
   });

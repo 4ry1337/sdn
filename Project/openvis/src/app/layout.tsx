@@ -4,7 +4,6 @@ import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { TooltipProvider } from "@/shared/ui/tooltip";
 import { Toaster } from "@/shared/ui/sonner";
-import { GraphProvider } from "@/widgets/topology_viewer";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -31,10 +30,8 @@ export default function RootLayout({
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <TooltipProvider delayDuration={0}>
-            <GraphProvider>
-              {children}
-              <Toaster />
-            </GraphProvider>
+            {children}
+            <Toaster />
           </TooltipProvider>
         </ThemeProvider>
       </body>
