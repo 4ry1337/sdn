@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { TooltipProvider } from "@/shared/ui/tooltip";
 import { Toaster } from "@/shared/ui/sonner";
+import { GraphProvider } from "@/features/topology";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -30,11 +31,25 @@ export default function RootLayout({
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <TooltipProvider delayDuration={0}>
-            {children}
+            <GraphProvider
+              default_params={{
+                centerForce: 0.5,
+                repelForce: 10,
+                linkForce: 0.5,
+                linkDistance: 250,
+              }}
+              default_filters={{
+                showControllers: true,
+                showSwitches: true,
+                showHosts: true,
+              }}
+            >
+              {children}
+            </GraphProvider>
             <Toaster />
           </TooltipProvider>
         </ThemeProvider>
       </body>
-    </html>
+    </html >
   );
 }

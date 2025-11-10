@@ -45,11 +45,11 @@ export async function fetch_floodlight_topology(url: string) {
         }
       },
       ...raw_switches.map((sw) => ({
-        id: sw.switchDPID || sw.dpid || '',
+        id: sw.switchDPID || sw.dpid || 'unknown-switch',
         type: 'switch' as const,
-        label: `Switch ${sw.switchDPID || sw.dpid || 'Unknown'}`,
+        label: sw.switchDPID || sw.dpid || 'Unknown Switch',
         metadata: sw,
-      })),
+      })).filter((node) => node.id !== 'unknown-switch'),
       ...raw_devices.map((device) => ({
         id: device.mac[0] || 'unknown-host',
         type: 'host' as const,
