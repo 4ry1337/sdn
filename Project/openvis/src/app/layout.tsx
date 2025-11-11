@@ -1,15 +1,15 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import { ThemeProvider } from "next-themes";
-import "./globals.css";
-import { TooltipProvider } from "@/shared/ui/tooltip";
-import { Toaster } from "@/shared/ui/sonner";
-import { GraphProvider } from "@/features/topology";
+import "./globals.css"
+import type { Metadata } from "next"
+import { Inter } from "next/font/google"
+import { ThemeProvider } from "next-themes"
+import { TooltipProvider } from "@/shared/ui/tooltip"
+import { Toaster } from "@/shared/ui/sonner"
+import { GraphProvider } from "@/features/graph"
 
-const inter = Inter({
+const inter = Inter( {
   variable: "--font-inter",
-  subsets: ["latin"]
-});
+  subsets: [ "latin" ]
+} )
 
 export const metadata: Metadata = {
   title: {
@@ -17,13 +17,13 @@ export const metadata: Metadata = {
     template: `%s | App`,
   },
   description: "SDN Network Visualizor",
-};
+}
 
-export default function RootLayout({
+export default function RootLayout( {
   children,
 }: Readonly<{
-  children: React.ReactNode;
-}>) {
+  children: React.ReactNode
+}> ) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -31,19 +31,7 @@ export default function RootLayout({
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <TooltipProvider delayDuration={0}>
-            <GraphProvider
-              default_params={{
-                centerForce: 0.5,
-                repelForce: 10,
-                linkForce: 0.5,
-                linkDistance: 250,
-              }}
-              default_filters={{
-                showControllers: true,
-                showSwitches: true,
-                showHosts: true,
-              }}
-            >
+            <GraphProvider>
               {children}
             </GraphProvider>
             <Toaster />
@@ -51,5 +39,5 @@ export default function RootLayout({
         </ThemeProvider>
       </body>
     </html >
-  );
+  )
 }

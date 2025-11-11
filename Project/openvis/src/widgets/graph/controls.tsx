@@ -1,21 +1,13 @@
-'use client';
+'use client'
 
-import { Label } from "@/shared/ui/label";
-import { Slider } from "@/shared/ui/slider";
-import { SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel } from "@/shared/ui/sidebar";
-import { RotateCcwIcon } from "lucide-react";
-import { useGraph } from "@/features/topology/topology.ui";
-import React from "react";
-import { storage } from "@/shared/lib/storage";
-import { SimulationParams } from "@/features/topology";
+import { Label } from "@/shared/ui/label"
+import { Slider } from "@/shared/ui/slider"
+import { SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel } from "@/shared/ui/sidebar"
+import { RotateCcwIcon } from "lucide-react"
+import { useGraphViewer } from "./context"
 
 export function GraphForceControls() {
-  const { simulation_params } = useGraph();
-
-  React.useEffect(() => {
-    const saved_params = storage.get<SimulationParams>('simulation_params');
-    simulation_params.update({ ...saved_params })
-  }, []);
+  const { params } = useGraphViewer()
 
   return (
     <SidebarGroup>
@@ -23,7 +15,7 @@ export function GraphForceControls() {
         Forces
       </SidebarGroupLabel>
       <SidebarGroupAction
-        onClick={simulation_params.reset}
+        onClick={params.reset}
       >
         <RotateCcwIcon />
         <span className="sr-only">Reset</span>
@@ -36,7 +28,7 @@ export function GraphForceControls() {
                 Center Force
               </Label>
               <span className="text-xs text-muted-foreground">
-                {simulation_params.value.centerForce.toFixed(2)}
+                {params.value.centerForce.toFixed( 2 )}
               </span>
             </div>
             <Slider
@@ -44,8 +36,8 @@ export function GraphForceControls() {
               min={0}
               max={1}
               step={0.01}
-              value={[simulation_params.value.centerForce]}
-              onValueChange={(value) => simulation_params.update({ centerForce: value[0] })}
+              value={[ params.value.centerForce ]}
+              onValueChange={( value ) => params.update( { centerForce: value[ 0 ] } )}
             />
           </div>
 
@@ -55,7 +47,7 @@ export function GraphForceControls() {
                 Repel Force
               </Label>
               <span className="text-xs text-muted-foreground">
-                {simulation_params.value.repelForce.toFixed(2)}
+                {params.value.repelForce.toFixed( 2 )}
               </span>
             </div>
             <Slider
@@ -63,8 +55,8 @@ export function GraphForceControls() {
               min={0}
               max={20}
               step={0.01}
-              value={[simulation_params.value.repelForce]}
-              onValueChange={(value) => simulation_params.update({ repelForce: value[0] })}
+              value={[ params.value.repelForce ]}
+              onValueChange={( value ) => params.update( { repelForce: value[ 0 ] } )}
             />
           </div>
 
@@ -74,7 +66,7 @@ export function GraphForceControls() {
                 Link Force
               </Label>
               <span className="text-xs text-muted-foreground">
-                {simulation_params.value.linkForce.toFixed(2)}
+                {params.value.linkForce.toFixed( 2 )}
               </span>
             </div>
             <Slider
@@ -82,8 +74,8 @@ export function GraphForceControls() {
               min={0}
               max={1}
               step={0.01}
-              value={[simulation_params.value.linkForce]}
-              onValueChange={(value) => simulation_params.update({ linkForce: value[0] })}
+              value={[ params.value.linkForce ]}
+              onValueChange={( value ) => params.update( { linkForce: value[ 0 ] } )}
             />
           </div>
 
@@ -93,7 +85,7 @@ export function GraphForceControls() {
                 Link Distance
               </Label>
               <span className="text-xs text-muted-foreground">
-                {simulation_params.value.linkDistance}
+                {params.value.linkDistance}
               </span>
             </div>
             <Slider
@@ -101,12 +93,12 @@ export function GraphForceControls() {
               min={30}
               max={500}
               step={1}
-              value={[simulation_params.value.linkDistance]}
-              onValueChange={(value) => simulation_params.update({ linkDistance: value[0] })}
+              value={[ params.value.linkDistance ]}
+              onValueChange={( value ) => params.update( { linkDistance: value[ 0 ] } )}
             />
           </div>
         </div>
       </SidebarGroupContent>
     </SidebarGroup>
-  );
+  )
 }

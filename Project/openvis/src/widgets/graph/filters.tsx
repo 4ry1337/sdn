@@ -1,21 +1,13 @@
-'use client';
+'use client'
 
-import { Label } from "@/shared/ui/label";
-import { SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel } from "@/shared/ui/sidebar";
-import { RotateCcwIcon } from "lucide-react";
-import { useGraph } from "@/features/topology/topology.ui";
-import React from "react";
-import { storage } from "@/shared/lib/storage";
-import { NodeFilters } from "@/features/topology";
-import { Checkbox } from "@/shared/ui/checkbox";
+import { Label } from "@/shared/ui/label"
+import { SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel } from "@/shared/ui/sidebar"
+import { RotateCcwIcon } from "lucide-react"
+import { Checkbox } from "@/shared/ui/checkbox"
+import { useGraphViewer } from "./context"
 
 export function GraphFilterControls() {
-  const { filter } = useGraph();
-
-  React.useEffect(() => {
-    const saved_filters = storage.get<NodeFilters>('filters');
-    filter.update({ ...saved_filters })
-  }, []);
+  const { filters } = useGraphViewer()
 
   return (
     <SidebarGroup>
@@ -23,7 +15,7 @@ export function GraphFilterControls() {
         Filters
       </SidebarGroupLabel>
       <SidebarGroupAction
-        onClick={filter.reset}
+        onClick={filters.reset}
       >
         <RotateCcwIcon />
         <span className="sr-only">Reset</span>
@@ -33,9 +25,9 @@ export function GraphFilterControls() {
           <div className="flex gap-2 px-2">
             <Checkbox
               id="filter-controllers"
-              checked={filter.values.showControllers}
-              onCheckedChange={(checked: boolean) =>
-                filter.update({ showControllers: checked })
+              checked={filters.value.showControllers}
+              onCheckedChange={( checked: boolean ) =>
+                filters.update( { showControllers: checked } )
               }
             />
             <Label
@@ -50,9 +42,9 @@ export function GraphFilterControls() {
           <div className="flex gap-2 px-2">
             <Checkbox
               id="filter-switches"
-              checked={filter.values.showSwitches}
-              onCheckedChange={(checked: boolean) =>
-                filter.update({ showSwitches: checked })
+              checked={filters.value.showSwitches}
+              onCheckedChange={( checked: boolean ) =>
+                filters.update( { showSwitches: checked } )
               }
             />
             <Label
@@ -67,9 +59,9 @@ export function GraphFilterControls() {
           <div className="flex gap-2 px-2">
             <Checkbox
               id="filter-hosts"
-              checked={filter.values.showHosts}
-              onCheckedChange={(checked: boolean) =>
-                filter.update({ showHosts: checked })
+              checked={filters.value.showHosts}
+              onCheckedChange={( checked: boolean ) =>
+                filters.update( { showHosts: checked } )
               }
             />
             <Label
@@ -83,5 +75,5 @@ export function GraphFilterControls() {
         </div>
       </SidebarGroupContent>
     </SidebarGroup>
-  );
+  )
 }
