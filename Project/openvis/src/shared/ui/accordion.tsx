@@ -6,30 +6,30 @@ import { ChevronDownIcon } from "lucide-react"
 
 import { cn } from "@/shared/lib/utils"
 
-function Accordion({
+function Accordion( {
   ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Root>) {
+}: React.ComponentProps<typeof AccordionPrimitive.Root> ) {
   return <AccordionPrimitive.Root data-slot="accordion" {...props} />
 }
 
-function AccordionItem({
+function AccordionItem( {
   className,
   ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Item>) {
+}: React.ComponentProps<typeof AccordionPrimitive.Item> ) {
   return (
     <AccordionPrimitive.Item
       data-slot="accordion-item"
-      className={cn("border-b last:border-b-0", className)}
+      className={cn( "border-b last:border-b-0", className )}
       {...props}
     />
   )
 }
 
-function AccordionTrigger({
+function AccordionTrigger( {
   className,
   children,
   ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Trigger>) {
+}: React.ComponentProps<typeof AccordionPrimitive.Trigger> ) {
   return (
     <AccordionPrimitive.Header className="flex">
       <AccordionPrimitive.Trigger
@@ -47,18 +47,18 @@ function AccordionTrigger({
   )
 }
 
-function AccordionContent({
+function AccordionContent( {
   className,
   children,
   ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Content>) {
+}: React.ComponentProps<typeof AccordionPrimitive.Content> ) {
   return (
     <AccordionPrimitive.Content
       data-slot="accordion-content"
       className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm"
       {...props}
     >
-      <div className={cn("pt-0 pb-4", className)}>{children}</div>
+      <div className={cn( "pt-0 pb-4", className )}>{children}</div>
     </AccordionPrimitive.Content>
   )
 }

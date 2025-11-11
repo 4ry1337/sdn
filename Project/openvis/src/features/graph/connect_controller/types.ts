@@ -1,4 +1,4 @@
-import z from "zod";
-import { ConnectControllerSchema } from "./schema";
+import z from "zod"
+import { ConnectControllerSchema } from "./schema"
 
-export type ConnectControllerFormValues = z.infer<typeof ConnectControllerSchema>;
+export type ConnectControllerFormValues = z.infer<typeof ConnectControllerSchema>

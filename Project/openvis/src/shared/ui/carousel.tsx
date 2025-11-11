@@ -9,40 +9,40 @@ import { ArrowLeft, ArrowRight } from "lucide-react"
 import { cn } from "@/shared/lib/utils"
 import { Button } from "@/shared/ui/button"
 
-type CarouselApi = UseEmblaCarouselType[1]
+type CarouselApi = UseEmblaCarouselType[ 1 ]
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>
-type CarouselOptions = UseCarouselParameters[0]
-type CarouselPlugin = UseCarouselParameters[1]
+type CarouselOptions = UseCarouselParameters[ 0 ]
+type CarouselPlugin = UseCarouselParameters[ 1 ]
 
 type CarouselProps = {
   opts?: CarouselOptions
   plugins?: CarouselPlugin
   orientation?: "horizontal" | "vertical"
-  setApi?: (api: CarouselApi) => void
+  setApi?: ( api: CarouselApi ) => void
 }
 
 type CarouselContextProps = {
-  carouselRef: ReturnType<typeof useEmblaCarousel>[0]
-  api: ReturnType<typeof useEmblaCarousel>[1]
+  carouselRef: ReturnType<typeof useEmblaCarousel>[ 0 ]
+  api: ReturnType<typeof useEmblaCarousel>[ 1 ]
   scrollPrev: () => void
   scrollNext: () => void
   canScrollPrev: boolean
   canScrollNext: boolean
 } & CarouselProps
 
-const CarouselContext = React.createContext<CarouselContextProps | null>(null)
+const CarouselContext = React.createContext<CarouselContextProps | null>( null )
 
 function useCarousel() {
-  const context = React.useContext(CarouselContext)
+  const context = React.useContext( CarouselContext )
 
-  if (!context) {
-    throw new Error("useCarousel must be used within a <Carousel />")
+  if ( !context ) {
+    throw new Error( "useCarousel must be used within a <Carousel />" )
   }
 
   return context
 }
 
-function Carousel({
+function Carousel( {
   orientation = "horizontal",
   opts,
   setApi,
@@ -50,59 +50,59 @@ function Carousel({
   className,
   children,
   ...props
-}: React.ComponentProps<"div"> & CarouselProps) {
-  const [carouselRef, api] = useEmblaCarousel(
+}: React.ComponentProps<"div"> & CarouselProps ) {
+  const [ carouselRef, api ] = useEmblaCarousel(
     {
       ...opts,
       axis: orientation === "horizontal" ? "x" : "y",
     },
     plugins
   )
-  const [canScrollPrev, setCanScrollPrev] = React.useState(false)
-  const [canScrollNext, setCanScrollNext] = React.useState(false)
+  const [ canScrollPrev, setCanScrollPrev ] = React.useState( false )
+  const [ canScrollNext, setCanScrollNext ] = React.useState( false )
 
-  const onSelect = React.useCallback((api: CarouselApi) => {
-    if (!api) return
-    setCanScrollPrev(api.canScrollPrev())
-    setCanScrollNext(api.canScrollNext())
-  }, [])
+  const onSelect = React.useCallback( ( api: CarouselApi ) => {
+    if ( !api ) return
+    setCanScrollPrev( api.canScrollPrev() )
+    setCanScrollNext( api.canScrollNext() )
+  }, [] )
 
-  const scrollPrev = React.useCallback(() => {
+  const scrollPrev = React.useCallback( () => {
     api?.scrollPrev()
-  }, [api])
+  }, [ api ] )
 
-  const scrollNext = React.useCallback(() => {
+  const scrollNext = React.useCallback( () => {
     api?.scrollNext()
-  }, [api])
+  }, [ api ] )
 
   const handleKeyDown = React.useCallback(
-    (event: React.KeyboardEvent<HTMLDivElement>) => {
-      if (event.key === "ArrowLeft") {
+    ( event: React.KeyboardEvent<HTMLDivElement> ) => {
+      if ( event.key === "ArrowLeft" ) {
         event.preventDefault()
         scrollPrev()
-      } else if (event.key === "ArrowRight") {
+      } else if ( event.key === "ArrowRight" ) {
         event.preventDefault()
         scrollNext()
       }
     },
-    [scrollPrev, scrollNext]
+    [ scrollPrev, scrollNext ]
   )
 
-  React.useEffect(() => {
-    if (!api || !setApi) return
-    setApi(api)
-  }, [api, setApi])
+  React.useEffect( () => {
+    if ( !api || !setApi ) return
+    setApi( api )
+  }, [ api, setApi ] )
 
-  React.useEffect(() => {
-    if (!api) return
-    onSelect(api)
-    api.on("reInit", onSelect)
-    api.on("select", onSelect)
+  React.useEffect( () => {
+    if ( !api ) return
+    onSelect( api )
+    api.on( "reInit", onSelect )
+    api.on( "select", onSelect )
 
     return () => {
-      api?.off("select", onSelect)
+      api?.off( "select", onSelect )
     }
-  }, [api, onSelect])
+  }, [ api, onSelect ] )
 
   return (
     <CarouselContext.Provider
@@ -111,7 +111,7 @@ function Carousel({
         api: api,
         opts,
         orientation:
-          orientation || (opts?.axis === "y" ? "vertical" : "horizontal"),
+          orientation || ( opts?.axis === "y" ? "vertical" : "horizontal" ),
         scrollPrev,
         scrollNext,
         canScrollPrev,
@@ -120,7 +120,7 @@ function Carousel({
     >
       <div
         onKeyDownCapture={handleKeyDown}
-        className={cn("relative", className)}
+        className={cn( "relative", className )}
         role="region"
         aria-roledescription="carousel"
         data-slot="carousel"
@@ -132,7 +132,7 @@ function Carousel({
   )
 }
 
-function CarouselContent({ className, ...props }: React.ComponentProps<"div">) {
+function CarouselContent( { className, ...props }: React.ComponentProps<"div"> ) {
   const { carouselRef, orientation } = useCarousel()
 
   return (
@@ -153,7 +153,7 @@ function CarouselContent({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-function CarouselItem({ className, ...props }: React.ComponentProps<"div">) {
+function CarouselItem( { className, ...props }: React.ComponentProps<"div"> ) {
   const { orientation } = useCarousel()
 
   return (
@@ -171,12 +171,12 @@ function CarouselItem({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-function CarouselPrevious({
+function CarouselPrevious( {
   className,
   variant = "outline",
   size = "icon",
   ...props
-}: React.ComponentProps<typeof Button>) {
+}: React.ComponentProps<typeof Button> ) {
   const { orientation, scrollPrev, canScrollPrev } = useCarousel()
 
   return (
@@ -201,12 +201,12 @@ function CarouselPrevious({
   )
 }
 
-function CarouselNext({
+function CarouselNext( {
   className,
   variant = "outline",
   size = "icon",
   ...props
-}: React.ComponentProps<typeof Button>) {
+}: React.ComponentProps<typeof Button> ) {
   const { orientation, scrollNext, canScrollNext } = useCarousel()
 
   return (

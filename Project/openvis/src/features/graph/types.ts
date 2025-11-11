@@ -1,5 +1,5 @@
-import { Link, Node } from '@/entities/graph';
-import { SimulationLinkDatum, SimulationNodeDatum } from 'd3';
+import { Link, Node } from '@/entities/graph'
+import { SimulationLinkDatum, SimulationNodeDatum } from 'd3'
 
 export type D3Node = Node & SimulationNodeDatum
 

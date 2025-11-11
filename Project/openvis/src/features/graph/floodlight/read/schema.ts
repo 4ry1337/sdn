@@ -1,6 +1,6 @@
-import z from "zod";
+import z from "zod"
 
-export const FloodlightLinkSchema = z.object({
+export const FloodlightLinkSchema = z.object( {
   'src-switch': z.string(),
   'src-port': z.number(),
   'dst-switch': z.string(),
@@ -8,9 +8,9 @@ export const FloodlightLinkSchema = z.object({
   type: z.string(),
   direction: z.string(),
   latency: z.number(),
-});
+} )
 
-export const FloodlightSwitchSchema = z.object({
+export const FloodlightSwitchSchema = z.object( {
   inetAddress: z.string(),
   connectedSince: z.number(),
   openFlowVersion: z.string(),
@@ -20,7 +20,7 @@ export const FloodlightSwitchSchema = z.object({
   // "connectedSince": 1762432611930,
   // "openFlowVersion": "OF_13",
   // "switchDPID": "00:00:00:00:00:00:00:03"
-});
+} )
 
 // http://localhost:8080/wm/device/
 // EXAMPLE:
@@ -44,21 +44,21 @@ export const FloodlightSwitchSchema = z.object({
 //   ],
 //   "lastSeen": 1762433634167
 // })
-export const FloodlightDeviceSchema = z.object({
+export const FloodlightDeviceSchema = z.object( {
   entityClass: z.string(),
-  mac: z.array(z.string()),
-  ipv4: z.array(z.ipv4()),
-  ipv6: z.array(z.ipv6()),
-  vlan: z.array(z.string()),
-  attachmentPoint: z.array(z.object({
+  mac: z.array( z.string() ),
+  ipv4: z.array( z.ipv4() ),
+  ipv6: z.array( z.ipv6() ),
+  vlan: z.array( z.string() ),
+  attachmentPoint: z.array( z.object( {
     switch: z.string(),
     port: z.string(),
-  })),
+  } ) ),
   lastSeen: z.number(),
-});
+} )
 
 //http://www.localhost:8080/wm/core/switch/json
-export const FloodlightSummerySchema = z.object({
+export const FloodlightSummerySchema = z.object( {
   // "# Switches": 3,
   // "# inter-switch links": 4,
   // "# quarantine ports": 0,
@@ -67,35 +67,35 @@ export const FloodlightSummerySchema = z.object({
   inter_switch_links: z.number(),
   quarantine_ports: z.number(),
   hosts: z.number(),
-});
+} )
 
 //http://www.localhost:8080/wm/core/memory/json
-export const FloodlightMemorySchema = z.object({
+export const FloodlightMemorySchema = z.object( {
   total: z.number(),
   free: z.number()
-})
+} )
 
 //http://www.localhost:8080/wm/core/health/json
-export const FloodlightHealthSchema = z.object({
+export const FloodlightHealthSchema = z.object( {
   healthy: z.boolean(),
-})
+} )
 
 //http://www.localhost:8080/wm/core/version/json
-export const FloodlightVersionSchema = z.object({
+export const FloodlightVersionSchema = z.object( {
   name: z.string(),
   version: z.string()
   // "name": "floodlight",
   // "version": "1.2-SNAPSHOT"
-})
+} )
 
 // http://www.localhost:8080/wm/core/system/uptime/json
-export const FloodlightUptimeSchema = z.object({
+export const FloodlightUptimeSchema = z.object( {
   systemUptimeMsec: z.number()
   // "systemUptimeMsec": 59488755
-})
+} )
 
 //http://www.localhost:8080/wm/core/storage/tables/json
-export const FloodlightTablesSchema = z.array(z.string())
+export const FloodlightTablesSchema = z.array( z.string() )
 // "controller_controller",
 // "controller_controllerinterface",
 // "controller_switchconfig",

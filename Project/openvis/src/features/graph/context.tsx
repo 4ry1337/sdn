@@ -1,195 +1,195 @@
-'use client';
+'use client'
 
-import React from 'react';
-import { toast } from 'sonner';
-import { Controller } from "@/entities/controller";
-import { Node, Link } from "@/entities/graph";
-import { storage } from '@/shared/lib/storage';
-import { D3Link, D3Node } from "./types";
-import { ConnectControllerFormValues } from './connect_controller';
+import React from 'react'
+import { toast } from 'sonner'
+import { Controller } from "@/entities/controller"
+import { Node, Link } from "@/entities/graph"
+import { storage } from '@/shared/lib/storage'
+import { D3Link, D3Node } from "./types"
+import { ConnectControllerFormValues } from './connect_controller'
 
 interface GraphContextType {
-  nodes: D3Node[];
-  links: D3Link[];
+  nodes: D3Node[]
+  links: D3Link[]
   graph: {
-    controllers: Map<string, Controller>;
-    connect: (values: ConnectControllerFormValues) => Promise<void>;
-    disconnect: (url: string) => void;
-    retry: (url: string) => Promise<void>;
-  };
+    controllers: Map<string, Controller>
+    connect: ( values: ConnectControllerFormValues ) => Promise<void>
+    disconnect: ( url: string ) => void
+    retry: ( url: string ) => Promise<void>
+  }
 }
 
-export const GraphContext = React.createContext<GraphContextType | undefined>(undefined);
+export const GraphContext = React.createContext<GraphContextType | undefined>( undefined )
 
-export function GraphProvider({ children, ...props }: React.ComponentProps<"div">) {
-  const [initialized, set_initialized] = React.useState(false);
+export function GraphProvider( { children, ...props }: React.ComponentProps<"div"> ) {
+  const [ initialized, set_initialized ] = React.useState( false )
 
-  const [controllers, set_controllers] = React.useState<Map<string, Controller>>(new Map());
-  const [nodes, set_nodes] = React.useState<D3Node[]>([]);
-  const [links, set_links] = React.useState<D3Link[]>([]);
+  const [ controllers, set_controllers ] = React.useState<Map<string, Controller>>( new Map() )
+  const [ nodes, set_nodes ] = React.useState<D3Node[]>( [] )
+  const [ links, set_links ] = React.useState<D3Link[]>( [] )
 
-  const save_controllers = React.useCallback((controllers: Map<string, Controller>) => {
-    const controllersArray = Array.from(controllers.values()).map(c => ({
+  const save_controllers = React.useCallback( ( controllers: Map<string, Controller> ) => {
+    const controllersArray = Array.from( controllers.values() ).map( c => ( {
       url: c.url,
       interval: c.interval,
-    }));
-    storage.set('controllers', controllersArray);
-  }, []);
+    } ) )
+    storage.set( 'controllers', controllersArray )
+  }, [] )
 
-  const connect_controller = React.useCallback(async (values: ConnectControllerFormValues) => {
-    if (controllers.has(values.url)) {
-      toast.error(`Already connected to ${values.url}`);
-      return;
+  const connect_controller = React.useCallback( async ( values: ConnectControllerFormValues ) => {
+    if ( controllers.has( values.url ) ) {
+      toast.error( `Already connected to ${values.url}` )
+      return
     }
 
-    set_controllers(prev => {
-      const next = new Map(prev);
-      next.set(values.url, {
+    set_controllers( prev => {
+      const next = new Map( prev )
+      next.set( values.url, {
         url: values.url,
         interval: values.interval,
         status: 'connecting',
         eventSource: null,
-      });
-      return next;
-    });
+      } )
+      return next
+    } )
 
     try {
-      await check_controller_health(values.url);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Health check failed';
-      toast.error(message);
-      set_controllers(prev => {
-        const next = new Map(prev);
-        next.set(values.url, {
+      await check_controller_health( values.url )
+    } catch ( error ) {
+      const message = error instanceof Error ? error.message : 'Health check failed'
+      toast.error( message )
+      set_controllers( prev => {
+        const next = new Map( prev )
+        next.set( values.url, {
           url: values.url,
           interval: values.interval,
           status: 'unreachable',
           eventSource: null,
-        });
-        save_controllers(next);
-        return next;
-      });
-      throw error;
+        } )
+        save_controllers( next )
+        return next
+      } )
+      throw error
     }
 
-    const eventSource = new EventSource(`/api/topology/floodlight/stream?url=${encodeURIComponent(values.url)}&i=${values.interval}`);
+    const eventSource = new EventSource( `/api/topology/floodlight/stream?url=${encodeURIComponent( values.url )}&i=${values.interval}` )
 
-    eventSource.addEventListener('topology', (e) => {
+    eventSource.addEventListener( 'topology', ( e ) => {
       try {
-        const topology = JSON.parse(e.data);
-        set_nodes(prev_nodes => {
-          const prev_links_ref = links;
-          const result = new_topology(values.url, { nodes: prev_nodes, links: prev_links_ref }, topology);
-          set_links(result.links);
-          return result.nodes;
-        });
-      } catch (error) {
-        console.error('[GRAPH] Failed to parse topology event:', error);
+        const topology = JSON.parse( e.data )
+        set_nodes( prev_nodes => {
+          const prev_links_ref = links
+          const result = new_topology( values.url, { nodes: prev_nodes, links: prev_links_ref }, topology )
+          set_links( result.links )
+          return result.nodes
+        } )
+      } catch ( error ) {
+        console.error( '[GRAPH] Failed to parse topology event:', error )
       }
-    });
+    } )
 
-    eventSource.addEventListener('error', (e: MessageEvent) => {
+    eventSource.addEventListener( 'error', ( e: MessageEvent ) => {
       try {
-        const errorData = JSON.parse(e.data);
-        toast.warning(`${values.url}: ${errorData.message}`);
-        if (errorData.code === 'MAX_ERRORS_REACHED' || errorData.code === 'INITIAL_CONNECTION_FAILED') {
-          set_controllers(prev => {
-            const next = new Map(prev);
-            const controller = next.get(values.url);
-            if (controller) {
-              controller.status = 'error';
-              next.set(values.url, controller);
-              save_controllers(next);
+        const errorData = JSON.parse( e.data )
+        toast.warning( `${values.url}: ${errorData.message}` )
+        if ( errorData.code === 'MAX_ERRORS_REACHED' || errorData.code === 'INITIAL_CONNECTION_FAILED' ) {
+          set_controllers( prev => {
+            const next = new Map( prev )
+            const controller = next.get( values.url )
+            if ( controller ) {
+              controller.status = 'error'
+              next.set( values.url, controller )
+              save_controllers( next )
             }
-            return next;
-          });
-          eventSource.close();
+            return next
+          } )
+          eventSource.close()
         }
-      } catch (error) {
-        console.error('[GRAPH] Failed to parse error event:', error);
+      } catch ( error ) {
+        console.error( '[GRAPH] Failed to parse error event:', error )
       }
-    });
+    } )
 
-    set_controllers(prev => {
-      const next = new Map(prev);
-      next.set(values.url, {
+    set_controllers( prev => {
+      const next = new Map( prev )
+      next.set( values.url, {
         url: values.url,
         interval: values.interval,
         status: 'connected',
         eventSource,
-      });
-      save_controllers(next);
-      return next;
-    });
+      } )
+      save_controllers( next )
+      return next
+    } )
 
-    toast.success(`Connected to ${values.url}`);
-  }, [controllers, links, save_controllers]);
+    toast.success( `Connected to ${values.url}` )
+  }, [ controllers, links, save_controllers ] )
 
-  const disconnect_controller = React.useCallback((url: string) => {
-    const controller = controllers.get(url);
-    if (!controller) return;
+  const disconnect_controller = React.useCallback( ( url: string ) => {
+    const controller = controllers.get( url )
+    if ( !controller ) return
 
-    controller.eventSource?.close();
+    controller.eventSource?.close()
 
-    set_controllers(prev => {
-      const next = new Map(prev);
-      next.delete(url);
-      save_controllers(next);
-      return next;
-    });
+    set_controllers( prev => {
+      const next = new Map( prev )
+      next.delete( url )
+      save_controllers( next )
+      return next
+    } )
 
-    set_nodes(prev => prev.filter(n => !n.id.startsWith(url)));
-    set_links(prev => prev.filter(l => !l.source.id.startsWith(url) && !l.target.id.startsWith(url)));
+    set_nodes( prev => prev.filter( n => !n.id.startsWith( url ) ) )
+    set_links( prev => prev.filter( l => !l.source.id.startsWith( url ) && !l.target.id.startsWith( url ) ) )
 
-    toast.info(`Disconnected from ${url}`);
-  }, [controllers, save_controllers]);
+    toast.info( `Disconnected from ${url}` )
+  }, [ controllers, save_controllers ] )
 
-  const retry_controller = React.useCallback(async (url: string) => {
-    const controller = controllers.get(url);
-    if (!controller) return;
-    set_controllers(prev => {
-      const next = new Map(prev);
-      const ctrl = next.get(url);
-      if (ctrl) {
-        ctrl.status = 'connecting';
-        next.set(url, ctrl);
+  const retry_controller = React.useCallback( async ( url: string ) => {
+    const controller = controllers.get( url )
+    if ( !controller ) return
+    set_controllers( prev => {
+      const next = new Map( prev )
+      const ctrl = next.get( url )
+      if ( ctrl ) {
+        ctrl.status = 'connecting'
+        next.set( url, ctrl )
       }
-      return next;
-    });
-    await connect_controller({ url: url, interval: controller.interval })
-      .catch((error) => console.error(`Failed to retry ${url}:`, error));
-  }, [controllers, connect_controller]);
+      return next
+    } )
+    await connect_controller( { url: url, interval: controller.interval } )
+      .catch( ( error ) => console.error( `Failed to retry ${url}:`, error ) )
+  }, [ controllers, connect_controller ] )
 
 
-  React.useEffect(() => {
-    if (initialized) return;
-    set_initialized(true);
-    const saved_controllers = storage.get<Array<{ url: string; interval: number }>>('controllers');
-    if (saved_controllers && saved_controllers.length > 0) {
-      saved_controllers.forEach(async ({ url, interval }) =>
-        await connect_controller({ url, interval })
-          .catch((error) => console.log(`Failed to restore controller ${url}:`, error)))
+  React.useEffect( () => {
+    if ( initialized ) return
+    set_initialized( true )
+    const saved_controllers = storage.get<Array<{ url: string; interval: number }>>( 'controllers' )
+    if ( saved_controllers && saved_controllers.length > 0 ) {
+      saved_controllers.forEach( async ( { url, interval } ) =>
+        await connect_controller( { url, interval } )
+          .catch( ( error ) => console.log( `Failed to restore controller ${url}:`, error ) ) )
     }
-  }, [initialized, connect_controller]);
+  }, [ initialized, connect_controller ] )
 
-  React.useEffect(() => {
-    const retryInterval = setInterval(() => {
-      controllers.forEach(async (controller, url) => {
-        if (controller.status === 'unreachable') {
+  React.useEffect( () => {
+    const retryInterval = setInterval( () => {
+      controllers.forEach( async ( controller, url ) => {
+        if ( controller.status === 'unreachable' ) {
           try {
-            await check_controller_health(url);
-            console.log(`[GRAPH][RETRY] Controller ${url} is back online, reconnecting...`);
-            await retry_controller(url);
-            toast.success(`Reconnected to ${url}`);
-          } catch (error) {
-            console.log(`[GRAPH][RETRY] Controller ${url} still unreachable`);
-            console.error(error)
+            await check_controller_health( url )
+            console.log( `[GRAPH][RETRY] Controller ${url} is back online, reconnecting...` )
+            await retry_controller( url )
+            toast.success( `Reconnected to ${url}` )
+          } catch ( error ) {
+            console.log( `[GRAPH][RETRY] Controller ${url} still unreachable` )
+            console.error( error )
           }
         }
-      });
-    }, 30000);
-    return () => clearInterval(retryInterval);
-  }, [controllers, retry_controller]);
+      } )
+    }, 30000 )
+    return () => clearInterval( retryInterval )
+  }, [ controllers, retry_controller ] )
 
   const value: GraphContextType = {
     nodes,
@@ -200,63 +200,63 @@ export function GraphProvider({ children, ...props }: React.ComponentProps<"div"
       disconnect: disconnect_controller,
       retry: retry_controller,
     },
-  };
+  }
 
   return (
     <GraphContext.Provider value={value} {...props} >
       {children}
     </GraphContext.Provider>
-  );
+  )
 }
 
 export function useGraph() {
-  const context = React.useContext(GraphContext);
-  if (!context) {
-    throw new Error('[GRAPH] useGraph must be used within TopologyViewerProvider');
+  const context = React.useContext( GraphContext )
+  if ( !context ) {
+    throw new Error( '[GRAPH] useGraph must be used within TopologyViewerProvider' )
   }
-  return context;
+  return context
 }
 
 const graph_changed = (
   existing: { nodes: D3Node[]; links: D3Link[] },
   incoming: { nodes: Node[]; links: Link[] }
 ): boolean => {
-  const existing_nodes = new Set(existing.nodes.map(n => n.id));
-  const incoming_nodes = new Set(incoming.nodes.map(n => n.id));
-  const existing_links = new Set(existing.links.map(l => `${l.source_id}->${l.target_id}`));
-  const incoming_links = new Set(incoming.links.map(l => `${l.source_id}->${l.target_id}`));
+  const existing_nodes = new Set( existing.nodes.map( n => n.id ) )
+  const incoming_nodes = new Set( incoming.nodes.map( n => n.id ) )
+  const existing_links = new Set( existing.links.map( l => `${l.source_id}->${l.target_id}` ) )
+  const incoming_links = new Set( incoming.links.map( l => `${l.source_id}->${l.target_id}` ) )
 
-  if (existing_nodes.size !== incoming_nodes.size) return true;
-  if (existing_links.size !== incoming_links.size) return true;
+  if ( existing_nodes.size !== incoming_nodes.size ) return true
+  if ( existing_links.size !== incoming_links.size ) return true
 
-  for (const id of existing_nodes) {
-    if (!incoming_nodes.has(id)) return true;
+  for ( const id of existing_nodes ) {
+    if ( !incoming_nodes.has( id ) ) return true
   }
-  for (const id of existing_links) {
-    if (!incoming_links.has(id)) return true;
+  for ( const id of existing_links ) {
+    if ( !incoming_links.has( id ) ) return true
   }
 
-  return false;
+  return false
 }
 
-const check_controller_health = async (url: string): Promise<void> => {
-  const response = await fetch(`/api/topology/floodlight/health?url=${encodeURIComponent(url)}`);
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error?.message || 'Health check failed');
+const check_controller_health = async ( url: string ): Promise<void> => {
+  const response = await fetch( `/api/topology/floodlight/health?url=${encodeURIComponent( url )}` )
+  if ( !response.ok ) {
+    const error = await response.json()
+    throw new Error( error.error?.message || 'Health check failed' )
   }
-};
+}
 
-const new_topology = (url: string, existing: { nodes: D3Node[], links: D3Link[] }, incoming: { nodes: Node[]; links: Link[] }): { nodes: D3Node[], links: D3Link[] } => {
-  if (!graph_changed(existing, incoming)) return existing;
+const new_topology = ( url: string, existing: { nodes: D3Node[], links: D3Link[] }, incoming: { nodes: Node[]; links: Link[] } ): { nodes: D3Node[], links: D3Link[] } => {
+  if ( !graph_changed( existing, incoming ) ) return existing
 
-  const external_nodes = existing.nodes.filter(n => !n.id.startsWith(url));
-  const internal_nodes = existing.nodes.filter(n => n.id.startsWith(url));
+  const external_nodes = existing.nodes.filter( n => !n.id.startsWith( url ) )
+  const internal_nodes = existing.nodes.filter( n => n.id.startsWith( url ) )
 
-  const internal_nodes_map = new Map(internal_nodes.map(n => [n.id, n]));
-  const merged_nodes = incoming.nodes.map(newNode => {
-    const existing = internal_nodes_map.get(newNode.id);
-    if (existing) {
+  const internal_nodes_map = new Map( internal_nodes.map( n => [ n.id, n ] ) )
+  const merged_nodes = incoming.nodes.map( newNode => {
+    const existing = internal_nodes_map.get( newNode.id )
+    if ( existing ) {
       return {
         ...newNode,
         x: existing.x,
@@ -265,28 +265,28 @@ const new_topology = (url: string, existing: { nodes: D3Node[], links: D3Link[] 
         vy: existing.vy,
         fx: existing.fx,
         fy: existing.fy,
-      };
+      }
     }
-    return newNode;
-  });
+    return newNode
+  } )
   const new_nodes = [
     ...external_nodes,
     ...merged_nodes
-  ];
+  ]
 
-  const external_links = existing.links.filter(l => !l.source_id.startsWith(url));
-  const new_nodes_map = new Map(new_nodes.map(n => [n.id, n]));
-  const merged_links = incoming.links.map(link => ({
+  const external_links = existing.links.filter( l => !l.source_id.startsWith( url ) )
+  const new_nodes_map = new Map( new_nodes.map( n => [ n.id, n ] ) )
+  const merged_links = incoming.links.map( link => ( {
     source_id: link.source_id,
     target_id: link.target_id,
-    source: new_nodes_map.get(link.source_id)!,
-    target: new_nodes_map.get(link.target_id)!,
-  } as D3Link));
+    source: new_nodes_map.get( link.source_id )!,
+    target: new_nodes_map.get( link.target_id )!,
+  } as D3Link ) )
 
   const new_links = [
     ...external_links,
     ...merged_links
-  ];
+  ]
 
   return {
     nodes: new_nodes,

@@ -1,4 +1,4 @@
-import { GraphViewer } from "@/widgets/graph_viewer";
+import { GraphViewer } from "@/widgets/graph"
 
 export default async function GraphPage() {
   return (

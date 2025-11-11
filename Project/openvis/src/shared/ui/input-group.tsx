@@ -8,7 +8,7 @@ import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { Textarea } from "@/shared/ui/textarea"
 
-function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
+function InputGroup( { className, ...props }: React.ComponentProps<"div"> ) {
   return (
     <div
       data-slot="input-group"
@@ -57,22 +57,22 @@ const inputGroupAddonVariants = cva(
   }
 )
 
-function InputGroupAddon({
+function InputGroupAddon( {
   className,
   align = "inline-start",
   ...props
-}: React.ComponentProps<"div"> & VariantProps<typeof inputGroupAddonVariants>) {
+}: React.ComponentProps<"div"> & VariantProps<typeof inputGroupAddonVariants> ) {
   return (
     <div
       role="group"
       data-slot="input-group-addon"
       data-align={align}
-      className={cn(inputGroupAddonVariants({ align }), className)}
-      onClick={(e) => {
-        if ((e.target as HTMLElement).closest("button")) {
+      className={cn( inputGroupAddonVariants( { align } ), className )}
+      onClick={( e ) => {
+        if ( ( e.target as HTMLElement ).closest( "button" ) ) {
           return
         }
-        e.currentTarget.parentElement?.querySelector("input")?.focus()
+        e.currentTarget.parentElement?.querySelector( "input" )?.focus()
       }}
       {...props}
     />
@@ -97,26 +97,26 @@ const inputGroupButtonVariants = cva(
   }
 )
 
-function InputGroupButton({
+function InputGroupButton( {
   className,
   type = "button",
   variant = "ghost",
   size = "xs",
   ...props
 }: Omit<React.ComponentProps<typeof Button>, "size"> &
-  VariantProps<typeof inputGroupButtonVariants>) {
+  VariantProps<typeof inputGroupButtonVariants> ) {
   return (
     <Button
       type={type}
       data-size={size}
       variant={variant}
-      className={cn(inputGroupButtonVariants({ size }), className)}
+      className={cn( inputGroupButtonVariants( { size } ), className )}
       {...props}
     />
   )
 }
 
-function InputGroupText({ className, ...props }: React.ComponentProps<"span">) {
+function InputGroupText( { className, ...props }: React.ComponentProps<"span"> ) {
   return (
     <span
       className={cn(
@@ -128,10 +128,10 @@ function InputGroupText({ className, ...props }: React.ComponentProps<"span">) {
   )
 }
 
-function InputGroupInput({
+function InputGroupInput( {
   className,
   ...props
-}: React.ComponentProps<"input">) {
+}: React.ComponentProps<"input"> ) {
   return (
     <Input
       data-slot="input-group-control"
@@ -144,10 +144,10 @@ function InputGroupInput({
   )
 }
 
-function InputGroupTextarea({
+function InputGroupTextarea( {
   className,
   ...props
-}: React.ComponentProps<"textarea">) {
+}: React.ComponentProps<"textarea"> ) {
   return (
     <Textarea
       data-slot="input-group-control"
