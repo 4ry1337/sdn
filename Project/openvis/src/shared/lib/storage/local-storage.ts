@@ -1,23 +1,15 @@
 import { IStorage } from './types';
 
-/**
- * LocalStorage adapter implementing IStorage interface
- * Handles JSON serialization, error handling, and key prefixing
- */
 export class LocalStorageAdapter implements IStorage {
   private prefix: string;
   private available: boolean = true;
 
   constructor(prefix: string = 'openvis') {
     this.prefix = prefix;
-    this.checkAvailability();
+    this.check_availability();
   }
 
-  /**
-   * Test if localStorage is available
-   * Can fail in private browsing mode or when storage is full
-   */
-  private checkAvailability(): void {
+  private check_availability(): void {
     try {
       const test = '__storage_test__';
       if (typeof window !== 'undefined' && window.localStorage) {
@@ -33,10 +25,7 @@ export class LocalStorageAdapter implements IStorage {
     }
   }
 
-  /**
-   * Get prefixed key to avoid collisions
-   */
-  private getKey(key: string): string {
+  private get_key(key: string): string {
     return `${this.prefix}_${key}`;
   }
 
@@ -44,7 +33,7 @@ export class LocalStorageAdapter implements IStorage {
     if (!this.available) return null;
 
     try {
-      const item = localStorage.getItem(this.getKey(key));
+      const item = localStorage.getItem(this.get_key(key));
       if (item === null) return null;
 
       return JSON.parse(item) as T;
@@ -59,7 +48,7 @@ export class LocalStorageAdapter implements IStorage {
 
     try {
       const serialized = JSON.stringify(value);
-      localStorage.setItem(this.getKey(key), serialized);
+      localStorage.setItem(this.get_key(key), serialized);
     } catch (error) {
       console.error(`[Storage] Failed to set "${key}":`, error);
 
@@ -75,7 +64,7 @@ export class LocalStorageAdapter implements IStorage {
     if (!this.available) return;
 
     try {
-      localStorage.removeItem(this.getKey(key));
+      localStorage.removeItem(this.get_key(key));
     } catch (error) {
       console.error(`[Storage] Failed to remove "${key}":`, error);
     }
@@ -98,7 +87,7 @@ export class LocalStorageAdapter implements IStorage {
     if (!this.available) return false;
 
     try {
-      return localStorage.getItem(this.getKey(key)) !== null;
+      return localStorage.getItem(this.get_key(key)) !== null;
     } catch (error) {
       console.error(`[Storage] Failed to check "${key}":`, error);
       return false;
@@ -118,10 +107,7 @@ export class LocalStorageAdapter implements IStorage {
     }
   }
 
-  /**
-   * Check if storage is available
-   */
-  isAvailable(): boolean {
+  is_available(): boolean {
     return this.available;
   }
 }

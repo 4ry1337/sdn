@@ -1,7 +1,3 @@
-/**
- * Storage interface for abstracting storage backends
- * Allows easy swapping between localStorage, Redis, IndexedDB, etc.
- */
 export interface IStorage {
   /**
    * Get item from storage
@@ -41,7 +37,4 @@ export interface IStorage {
   keys(): string[];
 }
 
-/**
- * Supported storage backend types
- */
-export type StorageType = 'localStorage' | 'sessionStorage' | 'redis' | 'indexedDB' | 'memory';
+export type StorageType = 'localStorage' //| 'sessionStorage' | 'redis' | 'indexedDB' | 'memory'
