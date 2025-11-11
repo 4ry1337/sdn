@@ -1,9 +1,10 @@
 import z from "zod";
 import axios, { AxiosError } from "axios";
-import { Link, Node } from "@/entities/graph";
+import { Graph, Link, Node } from "@/entities/graph";
 import { FloodlightDeviceSchema, FloodlightLinkSchema, FloodlightSwitchSchema } from "./schema";
+import { add_prefix } from "@/shared/lib/utils";
 
-export async function fetch_floodlight_topology(url: string) {
+export async function fetch_floodlight_topology(url: string): Promise<Graph> {
   try {
     // Fetch all three endpoints in parallel with timeout
     const [switches_response, links_response, devices_response] = await Promise.all([
@@ -12,7 +13,6 @@ export async function fetch_floodlight_topology(url: string) {
       axios.get(`${url}/wm/device/`, { timeout: 5000 }),
     ]);
 
-    // Validate responses with Zod schemas
     let raw_switches, raw_links, raw_devices;
 
     try {
@@ -34,72 +34,57 @@ export async function fetch_floodlight_topology(url: string) {
       throw new Error(`Invalid device data from Floodlight: ${error instanceof Error ? error.message : 'Unknown validation error'}`);
     }
 
-    // Transform to graph entities with safe array access
     const nodes: Node[] = [
       {
-        id: 'Floodlight Controller',
-        type: 'controller',
-        label: 'Controller',
-        metadata: {
-          url: url
-        }
+        id: 'floodlight-controller',
+        type: 'controller' as const,
+        label: 'Floodlight Controller',
       },
       ...raw_switches.map((sw) => ({
-        id: sw.switchDPID || sw.dpid || 'unknown-switch',
+        id: sw.switchDPID || sw.dpid || '',
         type: 'switch' as const,
         label: sw.switchDPID || sw.dpid || 'Unknown Switch',
-        metadata: sw,
-      })).filter((node) => node.id !== 'unknown-switch'),
+      })).filter((node) => node.id !== ''),
       ...raw_devices.map((device) => ({
-        id: device.mac[0] || 'unknown-host',
+        id: device.mac[0] || '',
         type: 'host' as const,
         label: device.mac[0] || 'Unknown Host',
-        metadata: device,
-      })).filter((node) => node.id !== 'unknown-host'),
-    ];
+      })).filter((node) => node.id !== ''),
+    ].map((node) => ({ ...node, id: add_prefix(url, node.id) }));
 
     const links: Link[] = [
       ...raw_switches.map((sw) => ({
-        source: 'Floodlight Controller',
-        target: sw.switchDPID || sw.dpid || '',
-      })).filter((link) => link.target),
+        source_id: 'floodlight-controller',
+        target_id: sw.switchDPID || sw.dpid || '',
+      })).filter((link) => link.target_id),
       ...raw_links.map((link) => ({
-        source: link['src-switch'],
-        target: link['dst-switch'],
-        metadata: link,
+        source_id: link['src-switch'],
+        target_id: link['dst-switch'],
       })),
       ...raw_devices.map((device) => ({
-        source: device.mac[0] || '',
-        target: device.attachmentPoint?.[0]?.switch || '',
-      })).filter((link) => link.source && link.target),
-    ];
+        source_id: device.mac[0] || '',
+        target_id: device.attachmentPoint?.[0]?.switch || '',
+      })).filter((link) => link.source_id != '' && link.target_id != ''),
+    ].map((link) => ({ ...link, source_id: add_prefix(url, link.source_id), target_id: add_prefix(url, link.target_id) }));
 
     return {
       nodes,
       links,
-      metadata: {
-        url,
-        controllerType: 'floodlight' as const,
-        timestamp: new Date().toISOString(),
-      },
+      created_at: new Date(),
+      updated_at: null,
     };
-
   } catch (error) {
-    // Handle axios-specific errors with detailed messages
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError;
 
-      // Timeout error
       if (axiosError.code === 'ECONNABORTED') {
         throw new Error(`Floodlight request timed out after 5s. Controller may be unresponsive at ${url}`);
       }
 
-      // Network error (DNS failure, connection refused, etc.)
       if (axiosError.code === 'ERR_NETWORK' || !axiosError.response) {
         throw new Error(`Cannot connect to Floodlight controller at ${url}. Check if the controller is running and the URL is correct.`);
       }
 
-      // HTTP error responses (4xx, 5xx)
       if (axiosError.response) {
         const status = axiosError.response.status;
         const endpoint = axiosError.config?.url || 'unknown endpoint';
@@ -120,7 +105,6 @@ export async function fetch_floodlight_topology(url: string) {
       }
     }
 
-    // Re-throw other errors (validation errors, etc.)
     throw error;
   }
 }
