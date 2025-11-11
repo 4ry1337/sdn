@@ -1,6 +1,6 @@
-import { fetch_floodlight_topology } from "@/features/topology/floodlight/read";
 import { NextRequest } from "next/server";
 import z from "zod";
+import { fetch_floodlight_topology } from "@/features/graph/floodlight/read";
 
 const default_interval = 5000;
 const max_consecutive_errors = 3;

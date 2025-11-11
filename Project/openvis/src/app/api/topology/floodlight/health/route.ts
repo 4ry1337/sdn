@@ -1,6 +1,6 @@
 import z from "zod";
 import { NextRequest, NextResponse } from "next/server";
-import { fetch_floodlight_topology } from "@/features/graph/floodlight/read";
+import { check_floodlight } from "@/features/graph/floodlight/check";
 
 const GetFloodlightTopologyQuerySchema = z.object({
   url: z.url('Invalid controller URL'),
@@ -30,8 +30,8 @@ export async function GET(req: NextRequest) {
   const { url } = validation.data
 
   try {
-    const topology = await fetch_floodlight_topology(url);
-    return NextResponse.json(topology, { status: 200 });
+    const health = await check_floodlight(url);
+    return NextResponse.json(health, { status: 200 });
 
   } catch (e) {
     const errorMessage = e instanceof Error ? e.message : 'Unknown error';
@@ -41,7 +41,6 @@ export async function GET(req: NextRequest) {
       timestamp: new Date().toISOString()
     });
 
-    // Determine error type and status code from error message
     let statusCode = 500;
     let errorCode = 'INTERNAL_ERROR';
 
