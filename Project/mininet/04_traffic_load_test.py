@@ -195,8 +195,24 @@ def select_traffic_flows(hosts, num_flows):
     Returns:
         List of tuples: (source_host, dest_host, dest_port)
     """
-    # TODO(human): Implement your traffic flow selection strategy here
-    pass
+    traffic_flows = []
+
+    # Create all possible pairs (excluding self-connections)
+    all_pairs = []
+    for i, src in enumerate(hosts):
+        for j, dst in enumerate(hosts):
+            if i != j:  # Avoid host talking to itself
+                dest_port = 5001 + j  # Port matches destination host index
+                all_pairs.append((src, dst, dest_port))
+
+    # Limit to requested number of flows
+    num_flows = min(num_flows, len(all_pairs))
+
+    # Randomly select flows for diverse traffic patterns
+    # This tests controller's ability to handle varied flow table entries
+    traffic_flows = sample(all_pairs, num_flows)
+
+    return traffic_flows
 
 
 if __name__ == '__main__':
