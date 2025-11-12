@@ -15,7 +15,7 @@ Usage:
 
 import argparse
 import time
-import threading
+import subprocess
 from mininet.net import Mininet
 from mininet.node import RemoteController, OVSSwitch
 from mininet.cli import CLI
@@ -134,34 +134,29 @@ def generate_traffic_load(net, hosts, bandwidth, duration, num_flows):
 
     info('*** Starting %d concurrent traffic flows\n' % len(traffic_flows))
 
-    # Start traffic generation in threads
-    threads = []
-    results = []
+    # Start traffic generation using popen (thread-safe for Mininet)
+    processes = []
 
     for src, dst, port in traffic_flows:
         info('  Flow: %s -> %s (%s for %ds)\n' % (src.name, dst.name, bandwidth, duration))
 
-        # Create thread for each flow
-        def run_traffic(source, dest, bw, dur, p, res_list):
-            cmd = 'iperf -c %s -p %d -b %s -t %d' % (dest.IP(), p, bw, dur)
-            result = source.cmd(cmd)
-            res_list.append((source.name, dest.name, result))
-
-        thread = threading.Thread(
-            target=run_traffic,
-            args=(src, dst, bandwidth, duration, port, results)
-        )
-        threads.append(thread)
-        thread.start()
+        # Use popen instead of cmd for concurrent execution
+        cmd = 'iperf -c %s -p %d -b %s -t %d' % (dst.IP(), port, bandwidth, duration)
+        proc = src.popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        processes.append((src.name, dst.name, proc))
 
     info('\n*** Traffic generation in progress...\n')
     info('*** Monitor the network in OpenVis: http://localhost:3000\n')
     info('*** Check Floodlight stats: http://localhost:8080/ui/pages/index.html\n')
     info('\n')
 
-    # Wait for all flows to complete
-    for thread in threads:
-        thread.join()
+    # Wait for all flows to complete and collect results
+    info('*** Waiting for traffic flows to complete...\n')
+    results = []
+    for src_name, dst_name, proc in processes:
+        stdout, stderr = proc.communicate()
+        proc.wait()
+        results.append((src_name, dst_name, stdout.decode('utf-8')))
 
     info('*** Traffic generation completed!\n')
     info('*** Results summary:\n')
