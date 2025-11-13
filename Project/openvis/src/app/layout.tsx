@@ -28,6 +28,7 @@ export default function RootLayout( {
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${inter.variable} antialiased`}
+        suppressHydrationWarning
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <TooltipProvider delayDuration={0}>

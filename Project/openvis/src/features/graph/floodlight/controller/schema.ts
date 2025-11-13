@@ -1,49 +1,6 @@
 import z from "zod"
 
-export const FloodlightLinkSchema = z.object( {
-  'src-switch': z.string(),
-  'src-port': z.number(),
-  'dst-switch': z.string(),
-  'dst-port': z.number(),
-  type: z.string(),
-  direction: z.string(),
-  latency: z.number(),
-} )
-
-export const FloodlightSwitchSchema = z.object( {
-  inetAddress: z.string(),
-  connectedSince: z.number(),
-  openFlowVersion: z.string(),
-  switchDPID: z.string(),
-  dpid: z.string().optional(),
-  // "inetAddress": "/192.168.56.104:34806",
-  // "connectedSince": 1762432611930,
-  // "openFlowVersion": "OF_13",
-  // "switchDPID": "00:00:00:00:00:00:00:03"
-} )
-
 // http://localhost:8080/wm/device/
-// EXAMPLE:
-// export const DeviceSchema = z.object({
-//   "entityClass": "DefaultEntityClass",
-//   "mac": [
-//     "8a:79:14:6e:ad:42"
-//   ],
-//   "ipv4": [],
-//   "ipv6": [
-//     "fe80::8879:14ff:fe6e:ad42"
-//   ],
-//   "vlan": [
-//     "0x0"
-//   ],
-//   "attachmentPoint": [
-//     {
-//       "switch": "00:00:00:00:00:00:00:03",
-//       "port": "3"
-//     }
-//   ],
-//   "lastSeen": 1762433634167
-// })
 export const FloodlightDeviceSchema = z.object( {
   entityClass: z.string(),
   mac: z.array( z.string() ),
@@ -75,11 +32,6 @@ export const FloodlightMemorySchema = z.object( {
   free: z.number()
 } )
 
-//http://www.localhost:8080/wm/core/health/json
-export const FloodlightHealthSchema = z.object( {
-  healthy: z.boolean(),
-} )
-
 //http://www.localhost:8080/wm/core/version/json
 export const FloodlightVersionSchema = z.object( {
   name: z.string(),
@@ -104,3 +56,17 @@ export const FloodlightTablesSchema = z.array( z.string() )
 // "controller_topologyconfig",
 // "controller_link",
 // "controller_firewallrules"
+
+export const FloodlightPortDescSchema = z.object( {
+  portNumber: z.number(),
+  hardwareAddress: z.string(),
+  name: z.string(),
+  config: z.number(),
+  state: z.number(),
+  currentFeatures: z.number(),
+  advertisedFeatures: z.number(),
+  supportedFeatures: z.number(),
+  peerFeatures: z.number(),
+  currentSpeed: z.number().optional(), // in kbps
+  maxSpeed: z.number().optional(), // in kbps
+} )

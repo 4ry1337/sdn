@@ -1,6 +1,6 @@
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/shared/ui/sidebar"
-import { GraphForceControls } from "./graph/controls"
-import { GraphFilterControls } from "./graph/filters"
+import { GraphForceControls } from './force-graph'
+import { GraphFilterControls } from './graph/filters'
 
 export const AppSidebar = () => {
   return (

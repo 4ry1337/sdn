@@ -3,8 +3,7 @@
 import React from "react"
 import * as d3 from 'd3'
 import { D3Link, D3Node, useGraph } from "@/features/graph"
-import { useGraphViewer } from "./context"
-import { remove_prefix } from "@/shared/lib/utils"
+import { useForceGraph } from "../force-graph/context"
 import {
   ContextMenu,
   ContextMenuContent,
@@ -15,22 +14,32 @@ import {
 } from "@/shared/ui/context-menu"
 import { ConnectControllerForm } from "@/features/graph/connect_controller"
 import './graph.css'
+import { ControllerContextMenu, HostContextMenu, LinkContextMenu, SwitchContextMenu } from '../context-menus'
+import { NodeType } from '@/entities/graph'
+import { useGraphViewer } from './context'
 
 export function GraphViewer() {
-  const { params, filters } = useGraphViewer()
   const svg_ref = React.useRef<SVGSVGElement | null>( null )
   const simulation_ref = React.useRef<d3.Simulation<D3Node, D3Link> | null>( null )
+
+  const { params } = useForceGraph()
+  const { filters } = useGraphViewer()
   const { nodes, links } = useGraph()
+
+  const [ context_menu, set_context_menu ] = React.useState<{
+    type: NodeType | 'link' | null
+    data: D3Link | D3Node | null
+  }>( {
+    type: null,
+    data: null,
+  } )
+
   React.useEffect( () => {
     if ( !svg_ref.current || nodes.length === 0 ) return
     const svg = d3.select( svg_ref.current )
-
+    svg.selectAll( '*' ).remove()
     const width = svg_ref.current.clientWidth || 800
     const height = svg_ref.current.clientHeight || 600
-
-    svg.selectAll( '*' ).remove()
-
-    const container = svg.append( 'g' ).attr( 'class', 'zoom-container' )
 
     const zoom = d3.zoom<SVGSVGElement, unknown>()
       .scaleExtent( [ 0.1, 4 ] )
@@ -51,48 +60,56 @@ export function GraphViewer() {
 
     simulation_ref.current = simulation
 
-    const link = container.append( 'g' )
+    const container = svg.append( 'g' ).attr( 'class', 'zoom-container' )
+
+    const link_group = container.append( 'g' )
       .attr( 'class', 'links' )
-      .selectAll( 'line' )
+      .selectAll( 'g' )
       .data( links )
-      .join( 'line' )
+      .join( 'g' )
+
+    const link = link_group.append( 'line' )
       .attr( 'class', 'graph-link' )
-      .attr( 'stroke', 'var(--primary)' )
+
+    link_group.append( 'line' )
+      .attr( 'class', 'graph-link-overlay' )
+      .on( 'mouseenter', ( _event, d ) => {
+        set_context_menu( { type: 'link', data: d } )
+      } )
 
     const node = container.append( 'g' )
       .attr( 'class', 'nodes' )
       .selectAll<SVGGElement, D3Node>( 'g' )
       .data( nodes )
       .join( 'g' )
-      .attr( 'id', d => `node-${d.id.replace( /:/g, '-' )}` )
-      .attr( 'class', 'node' )
-
-    node.style( 'opacity', d => {
-      if ( d.type === 'controller' && !filters.value.showControllers ) return 0
-      if ( d.type === 'switch' && !filters.value.showSwitches ) return 0
-      if ( d.type === 'host' && !filters.value.showHosts ) return 0
-      return 1
-    } )
+      .attr( 'class', 'graph-node' )
+      .style( 'opacity', d => {
+        if ( d.type === 'controller' && !filters.value.showControllers ) return 0
+        if ( d.type === 'switch' && !filters.value.showSwitches ) return 0
+        if ( d.type === 'host' && !filters.value.showHosts ) return 0
+        return 1
+      } )
+      .on( 'mouseenter', ( _event, d ) => {
+        set_context_menu( { type: d.type, data: d } )
+      } )
 
     node.append( 'circle' )
+      .attr( 'class', 'graph-node-circle' )
       .attr( 'r', 20 )
       .attr( 'fill', d => {
         switch ( d.type ) {
-          case 'controller': return '#22c55e' // green
-          case 'switch': return '#3b82f6' // blue
-          case 'host': return '#a855f7' // purple
-          default: return '#6b7280' // gray
+          case 'controller': return '#22c55e'
+          case 'switch': return '#3b82f6'
+          case 'host': return '#a855f7'
+          default: return '#6b7280'
         }
       } )
+      .attr( 'stroke', 'white' )
 
     node.append( 'text' )
-      .text( d => remove_prefix( d.label || d.id ) )
-      .attr( 'x', 0 )
-      .attr( 'y', 30 )
-      .attr( 'text-anchor', 'middle' )
-      .attr( 'font-size', '12px' )
-      .attr( 'fill', 'var(--foreground)' )
-
+      .attr( 'class', 'graph-node-text' )
+      .attr( 'y', 35 )
+      .text( d => d.label || d.id )
 
     const drag = d3.drag<SVGGElement, D3Node>()
       .on( 'start', ( event, d ) => {
@@ -112,16 +129,13 @@ export function GraphViewer() {
         d.fy = null
         link.classed( 'graph-link-highlighted', false )
       } )
-
     node.call( drag )
 
     simulation.on( 'tick', () => {
-      link
-        .attr( 'x1', d => ( d.source as D3Node ).x ?? 0 )
+      link.attr( 'x1', d => ( d.source as D3Node ).x ?? 0 )
         .attr( 'y1', d => ( d.source as D3Node ).y ?? 0 )
         .attr( 'x2', d => ( d.target as D3Node ).x ?? 0 )
         .attr( 'y2', d => ( d.target as D3Node ).y ?? 0 )
-
       node.attr( 'transform', d => `translate(${d.x ?? 0},${d.y ?? 0})` )
     } )
     return () => {
@@ -131,22 +145,39 @@ export function GraphViewer() {
 
 
   return (
-    <ContextMenu>
+    <ContextMenu onOpenChange={( open ) => {
+      if ( !open ) set_context_menu( { type: null, data: null } )
+      return !open
+    }}>
       <ContextMenuTrigger className="relative overflow-hidden flex flex-1 text-sm">
         <svg ref={svg_ref} className="w-full h-full" />
       </ContextMenuTrigger>
       <ContextMenuContent>
-        <ContextMenuSub>
-          <ContextMenuSubTrigger>Add controller</ContextMenuSubTrigger>
-          <ContextMenuSubContent>
-            <ContextMenuSub>
-              <ContextMenuSubTrigger>Floodlight</ContextMenuSubTrigger>
-              <ContextMenuSubContent>
-                <ConnectControllerForm className="px-2 py-1.5" />
-              </ContextMenuSubContent>
-            </ContextMenuSub>
-          </ContextMenuSubContent>
-        </ContextMenuSub>
+        {context_menu.type === 'link' && context_menu.data && (
+          <LinkContextMenu link={context_menu.data as D3Link} />
+        )}
+        {context_menu.type === 'controller' && context_menu.data && (
+          <ControllerContextMenu node={context_menu.data as D3Node} />
+        )}
+        {context_menu.type === 'switch' && context_menu.data && (
+          <SwitchContextMenu node={context_menu.data as D3Node} />
+        )}
+        {context_menu.type === 'host' && context_menu.data && (
+          <HostContextMenu node={context_menu.data as D3Node} />
+        )}
+        {context_menu.type === null && (
+          <ContextMenuSub>
+            <ContextMenuSubTrigger>Add controller</ContextMenuSubTrigger>
+            <ContextMenuSubContent>
+              <ContextMenuSub>
+                <ContextMenuSubTrigger>Floodlight</ContextMenuSubTrigger>
+                <ContextMenuSubContent>
+                  <ConnectControllerForm className="px-2 py-1.5" />
+                </ContextMenuSubContent>
+              </ContextMenuSub>
+            </ContextMenuSubContent>
+          </ContextMenuSub>
+        )}
       </ContextMenuContent>
     </ContextMenu>
   )

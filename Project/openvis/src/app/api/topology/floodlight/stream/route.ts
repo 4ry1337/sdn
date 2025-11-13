@@ -1,6 +1,6 @@
-import { NextRequest } from "next/server"
 import z from "zod"
-import { fetch_floodlight_topology } from "@/features/graph/floodlight/read"
+import { NextRequest } from "next/server"
+import { fetch_floodlight_topology } from "@/features/graph/floodlight"
 
 const default_interval = 5000
 const max_consecutive_errors = 3
@@ -54,7 +54,6 @@ export async function GET( req: NextRequest ) {
         controller.close()
       }
 
-      // Initial connection test
       try {
         const initialTopology = await fetch_floodlight_topology( url )
         sendEvent( 'topology', initialTopology )
@@ -62,7 +61,6 @@ export async function GET( req: NextRequest ) {
       } catch ( error ) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error'
         console.error( "[STREAM] Initial connection failed:", { url, error: errorMessage } )
-
         sendEvent( 'error', {
           code: 'INITIAL_CONNECTION_FAILED',
           message: errorMessage,

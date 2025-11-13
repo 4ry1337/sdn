@@ -1,9 +1,31 @@
 .graph-link {
   opacity: 0.6;
   stroke-width: 2;
+  stroke: var(--primary);
 }
 
 .graph-link-highlighted {
   opacity: 1;
   stroke-width: 3;
+}
+
+.graph-link-overlay {
+  opacity: 0;
+  stroke-width: 30;
+  stroke: transparent;
+  cursor: pointer;
+}
+
+.graph-node {
+  cursor: pointer;
+}
+
+.graph-node-circle {
+  stroke-width: 2;
+}
+
+.graph-node-text {
+  text-anchor: middle;
+  fill: var(--foreground);
+  font-size: var(--text-sm);
 }

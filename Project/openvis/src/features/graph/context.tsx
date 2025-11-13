@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { toast } from 'sonner'
-import { Controller } from "@/entities/controller"
+import { Controller, ControllerType } from "@/entities/controller"
 import { Node, Link } from "@/entities/graph"
 import { storage } from '@/shared/lib/storage'
 import { D3Link, D3Node } from "./types"
@@ -49,12 +49,13 @@ export function GraphProvider( { children, ...props }: React.ComponentProps<"div
         interval: values.interval,
         status: 'connecting',
         eventSource: null,
+        type: values.type
       } )
       return next
     } )
 
     try {
-      await check_controller_health( values.url )
+      await check_controller_health( values.url, values.type )
     } catch ( error ) {
       const message = error instanceof Error ? error.message : 'Health check failed'
       toast.error( message )
@@ -64,6 +65,7 @@ export function GraphProvider( { children, ...props }: React.ComponentProps<"div
           url: values.url,
           interval: values.interval,
           status: 'unreachable',
+          type: values.type,
           eventSource: null,
         } )
         save_controllers( next )
@@ -72,16 +74,18 @@ export function GraphProvider( { children, ...props }: React.ComponentProps<"div
       throw error
     }
 
-    const eventSource = new EventSource( `/api/topology/floodlight/stream?url=${encodeURIComponent( values.url )}&i=${values.interval}` )
+    const eventSource = new EventSource( `/api/topology/${values.type}/stream?url=${encodeURIComponent( values.url )}&i=${values.interval}` )
 
     eventSource.addEventListener( 'topology', ( e ) => {
       try {
         const topology = JSON.parse( e.data )
         set_nodes( prev_nodes => {
-          const prev_links_ref = links
-          const result = new_topology( values.url, { nodes: prev_nodes, links: prev_links_ref }, topology )
-          set_links( result.links )
-          return result.nodes
+          set_links( prev_links => {
+            const result = new_topology( values.url, { nodes: prev_nodes, links: prev_links }, topology )
+            set_nodes( result.nodes )
+            return result.links
+          } )
+          return prev_nodes
         } )
       } catch ( error ) {
         console.error( '[GRAPH] Failed to parse topology event:', error )
@@ -115,6 +119,7 @@ export function GraphProvider( { children, ...props }: React.ComponentProps<"div
       next.set( values.url, {
         url: values.url,
         interval: values.interval,
+        type: values.type,
         status: 'connected',
         eventSource,
       } )
@@ -156,7 +161,7 @@ export function GraphProvider( { children, ...props }: React.ComponentProps<"div
       }
       return next
     } )
-    await connect_controller( { url: url, interval: controller.interval } )
+    await connect_controller( { url: url, interval: controller.interval, type: controller.type } )
       .catch( ( error ) => console.error( `Failed to retry ${url}:`, error ) )
   }, [ controllers, connect_controller ] )
 
@@ -167,22 +172,22 @@ export function GraphProvider( { children, ...props }: React.ComponentProps<"div
     const saved_controllers = storage.get<Array<{ url: string; interval: number }>>( 'controllers' )
     if ( saved_controllers && saved_controllers.length > 0 ) {
       saved_controllers.forEach( async ( { url, interval } ) =>
-        await connect_controller( { url, interval } )
+        await connect_controller( { url, interval, type: "floodlight" } )
           .catch( ( error ) => console.log( `Failed to restore controller ${url}:`, error ) ) )
     }
   }, [ initialized, connect_controller ] )
 
   React.useEffect( () => {
     const retryInterval = setInterval( () => {
-      controllers.forEach( async ( controller, url ) => {
+      controllers.forEach( async ( controller ) => {
         if ( controller.status === 'unreachable' ) {
           try {
-            await check_controller_health( url )
-            console.log( `[GRAPH][RETRY] Controller ${url} is back online, reconnecting...` )
-            await retry_controller( url )
-            toast.success( `Reconnected to ${url}` )
+            await check_controller_health( controller.url, controller.type )
+            console.log( `[GRAPH][RETRY] Controller ${controller.url} is back online, reconnecting...` )
+            await retry_controller( controller.url )
+            toast.success( `Reconnected to ${controller.url}` )
           } catch ( error ) {
-            console.log( `[GRAPH][RETRY] Controller ${url} still unreachable` )
+            console.log( `[GRAPH][RETRY] Controller ${controller.url} still unreachable` )
             console.error( error )
           }
         }
@@ -239,8 +244,8 @@ const graph_changed = (
   return false
 }
 
-const check_controller_health = async ( url: string ): Promise<void> => {
-  const response = await fetch( `/api/topology/floodlight/health?url=${encodeURIComponent( url )}` )
+const check_controller_health = async ( url: string, type: ControllerType ): Promise<void> => {
+  const response = await fetch( `/api/topology/${type}/health?url=${encodeURIComponent( url )}` )
   if ( !response.ok ) {
     const error = await response.json()
     throw new Error( error.error?.message || 'Health check failed' )
@@ -276,12 +281,18 @@ const new_topology = ( url: string, existing: { nodes: D3Node[], links: D3Link[]
 
   const external_links = existing.links.filter( l => !l.source_id.startsWith( url ) )
   const new_nodes_map = new Map( new_nodes.map( n => [ n.id, n ] ) )
-  const merged_links = incoming.links.map( link => ( {
-    source_id: link.source_id,
-    target_id: link.target_id,
-    source: new_nodes_map.get( link.source_id )!,
-    target: new_nodes_map.get( link.target_id )!,
-  } as D3Link ) )
+  const merged_links = incoming.links.map( link => {
+    let source = new_nodes_map.get( link.source_id )
+    let target = new_nodes_map.get( link.target_id )
+    if ( !source || !target ) {
+      return null
+    }
+    return {
+      ...link, // Preserve all link properties including bandwidth metrics
+      source,
+      target,
+    } as D3Link
+  } ).filter( link => link !== null )
 
   const new_links = [
     ...external_links,

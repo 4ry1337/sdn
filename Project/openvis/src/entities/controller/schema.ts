@@ -8,4 +8,5 @@ export const ControllerSchema = z.object( {
   url: z.url(),
   interval: z.number().gt( 0 ),
   status: ControllerStatusSchema,
+  type: ControllerTypeSchema
 } )

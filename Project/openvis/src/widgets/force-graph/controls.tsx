@@ -4,10 +4,10 @@ import { Label } from "@/shared/ui/label"
 import { Slider } from "@/shared/ui/slider"
 import { SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel } from "@/shared/ui/sidebar"
 import { RotateCcwIcon } from "lucide-react"
-import { useGraphViewer } from "./context"
+import { useForceGraph } from './context'
 
 export function GraphForceControls() {
-  const { params } = useGraphViewer()
+  const { params } = useForceGraph()
 
   return (
     <SidebarGroup>

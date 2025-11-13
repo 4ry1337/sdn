@@ -26,6 +26,7 @@ export const ConnectControllerForm = ( { className, ...props }: React.ComponentP
     defaultValues: {
       url: "http://localhost:8080",
       interval: 5000,
+      type: "floodlight",
     },
   } )
 
