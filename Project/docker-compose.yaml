@@ -5,3 +5,10 @@ services:
     ports:
       - "6653:6653"
       - "8080:8080"
+
+  floodlight2:
+    image: piyushk2001/floodlight-controller:latest
+    container_name: openvis-controller2
+    ports:
+      - "6654:6653"
+      - "8081:8080"

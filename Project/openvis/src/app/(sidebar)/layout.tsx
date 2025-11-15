@@ -2,6 +2,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/shared/ui/sideb
 import { AppSidebar } from "@/widgets/appsidebar"
 import { ForceGraphProvider } from '@/widgets/force-graph'
 import { GraphViewerProvider } from '@/widgets/graph/context'
+import { SearchProvider } from '@/widgets/search'
 
 export default function SidebarLayout( {
   children,
@@ -24,6 +25,7 @@ export default function SidebarLayout( {
           showHosts: true,
         }}
       >
+        <SearchProvider>
         <SidebarProvider
           style={
             {
@@ -47,6 +49,7 @@ export default function SidebarLayout( {
             <AppSidebar />
           </div>
         </SidebarProvider>
+        </SearchProvider>
       </GraphViewerProvider>
     </ForceGraphProvider>
   )

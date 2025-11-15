@@ -17,6 +17,7 @@ import './graph.css'
 import { ControllerContextMenu, HostContextMenu, LinkContextMenu, SwitchContextMenu } from '../context-menus'
 import { NodeType } from '@/entities/graph'
 import { useGraphViewer } from './context'
+import { useSearch } from '../search'
 
 export function GraphViewer() {
   const svg_ref = React.useRef<SVGSVGElement | null>( null )
@@ -25,6 +26,7 @@ export function GraphViewer() {
   const { params } = useForceGraph()
   const { filters } = useGraphViewer()
   const { nodes, links } = useGraph()
+  const { highlightedNodeId } = useSearch()
 
   const [ context_menu, set_context_menu ] = React.useState<{
     type: NodeType | 'link' | null
@@ -110,7 +112,7 @@ export function GraphViewer() {
 
     node.append( 'circle' )
       .attr( 'class', 'graph-node-circle' )
-      .attr( 'r', 20 )
+      .attr( 'r', d => d.id === highlightedNodeId ? 25 : 20 )
       .attr( 'fill', d => {
         switch ( d.type ) {
           case 'controller': return '#22c55e'
@@ -119,7 +121,8 @@ export function GraphViewer() {
           default: return '#6b7280'
         }
       } )
-      .attr( 'stroke', 'white' )
+      .attr( 'stroke', d => d.id === highlightedNodeId ? '#fbbf24' : 'white' )
+      .attr( 'stroke-width', d => d.id === highlightedNodeId ? 3 : 1 )
 
     node.append( 'text' )
       .attr( 'class', 'graph-node-text' )
@@ -158,7 +161,29 @@ export function GraphViewer() {
     return () => {
       simulation.stop()
     }
-  }, [ nodes, links, params, filters ] )
+  }, [ nodes, links, params, filters, highlightedNodeId ] )
+
+  React.useEffect( () => {
+    if ( !svg_ref.current || !highlightedNodeId ) return
+
+    const highlightedNode = nodes.find( n => n.id === highlightedNodeId )
+    if ( !highlightedNode || highlightedNode.x === undefined || highlightedNode.y === undefined ) return
+
+    const svg = d3.select( svg_ref.current )
+    const width = svg_ref.current.clientWidth || 800
+    const height = svg_ref.current.clientHeight || 600
+
+    const currentTransform = d3.zoomTransform( svg.node()! )
+    const targetX = width / 2 - highlightedNode.x * currentTransform.k
+    const targetY = height / 2 - highlightedNode.y * currentTransform.k
+
+    svg.transition()
+      .duration( 750 )
+      .call(
+        d3.zoom<SVGSVGElement, unknown>().transform as any,
+        d3.zoomIdentity.translate( targetX, targetY ).scale( currentTransform.k )
+      )
+  }, [ highlightedNodeId, nodes ] )
 
   return (
     <ContextMenu onOpenChange={( open ) => {
