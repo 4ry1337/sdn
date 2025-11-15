@@ -1,21 +1,18 @@
 import z from "zod"
 import axios, { AxiosError } from "axios"
-import { Node } from "@/entities/graph"
-import { add_prefix } from "@/shared/lib/utils"
+import { FloodlightTables } from './types'
+import { FloodlightTablesSchema } from './schema'
 
-export async function floodlight_fetch_controller( url: string ): Promise<Node> {
+export async function floodlight_fetch_controller_tables( url: string ): Promise<FloodlightTables> {
   try {
-    // Fetch controller data and port statistics in parallel
-    // const controller_stats_response = 
-
-    return {
-      id: add_prefix( url, 'floodlight-controller' ),
-      type: 'controller' as const,
-      label: 'Floodlight Controller',
-    }
+    const response = await axios.get( `${url}/wm/core/storage/tables/json`, {
+      timeout: 5000,
+      headers: { 'Accept': 'application/json' },
+    } )
+    return FloodlightTablesSchema.parse( response.data )
   } catch ( error ) {
     if ( error instanceof z.ZodError ) {
-      throw new Error( `Invalid controller data from Floodlight: ${error.message}` )
+      throw new Error( `Invalid controller tables data from Floodlight: ${error.message}` )
     }
     if ( axios.isAxiosError( error ) ) {
       const axiosError = error as AxiosError

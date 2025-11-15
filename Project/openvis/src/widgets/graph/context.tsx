@@ -54,7 +54,6 @@ export const GraphViewerProvider = ( {
   )
 }
 
-
 export function useGraphViewer() {
   const context = React.useContext( GraphViewerContext )
   if ( !context ) {

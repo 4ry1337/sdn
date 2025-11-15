@@ -143,7 +143,6 @@ export function GraphViewer() {
     }
   }, [ nodes, links, params, filters ] )
 
-
   return (
     <ContextMenu onOpenChange={( open ) => {
       if ( !open ) set_context_menu( { type: null, data: null } )

@@ -1,6 +1,6 @@
 import z from "zod"
 import { NextRequest, NextResponse } from "next/server"
-import { check_floodlight } from "@/features/graph/floodlight/check"
+import { check_floodlight } from "@/features/floodlight/controller/health"
 
 const GetFloodlightTopologyQuerySchema = z.object( {
   url: z.url( 'Invalid controller URL' ),

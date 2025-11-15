@@ -1,10 +1,8 @@
 "use client"
 
 import React from "react"
-import * as d3 from 'd3'
 import { storage } from "@/shared/lib/storage"
 import { ForceGraphParams } from './types'
-import { D3Link, D3Node, useGraph } from '@/features/graph'
 
 interface ForceGraphContextType {
   params: {

@@ -16,6 +16,17 @@ export const floodlight_fetch_hosts = async ( url: string ): Promise<Graph> => {
         id: add_prefix( url, value.mac[ 0 ] ),
         label: value.mac[ 0 ],
         type: 'host' as const,
+        metadata: {
+          entity_class: value.entityClass,
+          mac: value.mac,
+          ipv4: value.ipv4,
+          ipv6: value.ipv6,
+          vlan: value.vlan,
+          attachment_point: value.attachmentPoint,
+        },
+        metrics: {
+          last_seen: value.lastSeen,
+        },
       } ) ),
       links: devices_with_attachment.map( value => ( {
         source_id: add_prefix( url, value.mac[ 0 ] ),
