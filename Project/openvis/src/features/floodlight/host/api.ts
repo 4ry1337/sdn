@@ -4,11 +4,7 @@ import { Graph } from '@/entities/graph'
 import { add_prefix } from '@/shared/lib/utils'
 import { FloodlightDeviceResponseSchema } from './schema'
 
-export const floodlight_fetch_hosts = async (
-  url: string,
-  port_stats_map: Map<string, any[]>,
-  port_desc_map: Map<string, any[]>
-): Promise<Graph> => {
+export const floodlight_fetch_hosts = async ( url: string ): Promise<Graph> => {
   try {
     let devices_response = await axios.get( `${url}/wm/device/`, { timeout: 5000 } )
     let { devices } = z.object( { "devices": z.array( FloodlightDeviceResponseSchema ) } ).parse( devices_response.data )
@@ -37,32 +33,12 @@ export const floodlight_fetch_hosts = async (
         const switch_dpid = attachment.switch
         const port_num = attachment.port.toString()
 
-        const port_stats = port_stats_map.get( switch_dpid )?.find( ( p: any ) => p.port_number === port_num )
-        const port_desc = port_desc_map.get( switch_dpid )?.find( ( p: any ) => p.port_number === port_num )
-
-        const duration_sec = port_stats?.duration_sec || 1
-        const tx_bandwidth = duration_sec > 0 ? ( port_stats?.transmit_bytes || 0 ) / duration_sec : 0
-        const rx_bandwidth = duration_sec > 0 ? ( port_stats?.receive_bytes || 0 ) / duration_sec : 0
-        const utilization = ( tx_bandwidth + rx_bandwidth ) / 2
-
         return {
           source_id: add_prefix( url, value.mac[ 0 ] ),
           target_id: add_prefix( url, switch_dpid ),
-          metrics: {
-            utilization: utilization,
-            transmit_bytes: port_stats?.transmit_bytes || 0,
-            receive_bytes: port_stats?.receive_bytes || 0,
-            transmit_packets: port_stats?.transmit_packets || 0,
-            receive_packets: port_stats?.receive_packets || 0,
-            transmit_errors: port_stats?.transmit_errors || 0,
-            receive_errors: port_stats?.receive_errors || 0,
-            transmit_dropped: port_stats?.transmit_dropped || 0,
-            receive_dropped: port_stats?.receive_dropped || 0,
-          },
           metadata: {
             src_port: port_num,
             link_type: 'host-switch',
-            src_port_name: port_desc?.name,
           }
         }
       } ),

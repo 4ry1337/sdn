@@ -35,9 +35,10 @@ export function GraphViewer() {
   } )
 
   React.useEffect( () => {
-    if ( !svg_ref.current || nodes.length === 0 ) return
+    if ( !svg_ref.current ) return
     const svg = d3.select( svg_ref.current )
     svg.selectAll( '*' ).remove()
+    if ( nodes.length === 0 ) return
     const width = svg_ref.current.clientWidth || 800
     const height = svg_ref.current.clientHeight || 600
 

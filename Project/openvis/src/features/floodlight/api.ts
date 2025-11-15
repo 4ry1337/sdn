@@ -5,18 +5,22 @@ import { floodlight_fetch_switches } from './switch'
 import { floodlight_fetch_hosts } from './host'
 import { floodlight_fetch_links } from './link'
 import { floodlight_fetch_controller } from './controller'
+import { remove_prefix } from '@/shared/lib/utils'
 
 export async function fetch_floodlight_topology( url: string ): Promise<Graph> {
   try {
     // Fetch controller and switches first (switches include all port data)
-    const [ controller_response, switches_response ] = await Promise.all( [
+    const [ controller_response, switches_response, links_response, devices_response ] = await Promise.all( [
       floodlight_fetch_controller( url ),
       floodlight_fetch_switches( url ),
+      floodlight_fetch_links( url ),
+      floodlight_fetch_hosts( url )
     ] )
 
     // Extract port data from switch nodes to avoid duplicate fetching
     const port_stats_map = new Map()
     const port_desc_map = new Map()
+
     switches_response.nodes.forEach( node => {
       if ( node.type === 'switch' && node.port ) {
         const dpid = node.id.split( '::' )[ 1 ]
@@ -27,11 +31,78 @@ export async function fetch_floodlight_topology( url: string ): Promise<Graph> {
       }
     } )
 
-    // Fetch links and hosts, passing the cached port data
-    const [ links_response, devices_response ] = await Promise.all( [
-      floodlight_fetch_links( url, port_stats_map, port_desc_map ),
-      floodlight_fetch_hosts( url, port_stats_map, port_desc_map )
-    ] )
+    // Enrich host links with port metrics and metadata
+    const enriched_host_links = devices_response.links.map( link => {
+      const src_port = link.metadata?.src_port
+      const switch_dpid = remove_prefix( link.target_id )
+
+      const port_stats = port_stats_map.get( switch_dpid )?.find( ( p: any ) => p.port_number === src_port )
+      const port_desc = port_desc_map.get( switch_dpid )?.find( ( p: any ) => p.port_number === src_port )
+
+      const duration_sec = port_stats?.duration_sec || 1
+      const tx_bandwidth = duration_sec > 0 ? ( port_stats?.transmit_bytes || 0 ) / duration_sec : 0
+      const rx_bandwidth = duration_sec > 0 ? ( port_stats?.receive_bytes || 0 ) / duration_sec : 0
+      const utilization = ( tx_bandwidth + rx_bandwidth ) / 2
+
+      return {
+        ...link,
+        metrics: {
+          utilization: utilization,
+          transmit_bytes: port_stats?.transmit_bytes,
+          receive_bytes: port_stats?.receive_bytes,
+          transmit_packets: port_stats?.transmit_packets,
+          receive_packets: port_stats?.receive_packets,
+          transmit_errors: port_stats?.transmit_errors,
+          receive_errors: port_stats?.receive_errors,
+          transmit_dropped: port_stats?.transmit_dropped,
+          receive_dropped: port_stats?.receive_dropped,
+        },
+        metadata: {
+          ...link.metadata,
+          src_port_name: port_desc?.name,
+        }
+      }
+    } )
+
+    // Enrich switch-to-switch links with port metrics and metadata
+    const enriched_switch_links = links_response.links.map( link => {
+      const src_switch = remove_prefix( link.source_id )
+      const dst_switch = remove_prefix( link.target_id )
+      const src_port = link.metadata?.src_port
+      const dst_port = link.metadata?.dst_port
+
+      const src_stats = port_stats_map.get( src_switch )?.find( ( p: any ) => p.port_number === src_port )
+      const dst_stats = port_stats_map.get( dst_switch )?.find( ( p: any ) => p.port_number === dst_port )
+
+      const src_desc = port_desc_map.get( src_switch )?.find( ( p: any ) => p.port_number === src_port )
+      const dst_desc = port_desc_map.get( dst_switch )?.find( ( p: any ) => p.port_number === dst_port )
+
+      const duration_sec = Math.max( src_stats?.duration_sec || 1, dst_stats?.duration_sec || 1 )
+      const tx_bandwidth = duration_sec > 0 ? ( src_stats?.transmit_bytes || 0 ) / duration_sec : 0
+      const rx_bandwidth = duration_sec > 0 ? ( dst_stats?.receive_bytes || 0 ) / duration_sec : 0
+      const utilization = ( tx_bandwidth + rx_bandwidth ) / 2
+
+      return {
+        ...link,
+        metrics: {
+          ...link.metrics,
+          utilization: utilization,
+          transmit_bytes: ( src_stats?.transmit_bytes || 0 ) + ( dst_stats?.transmit_bytes || 0 ),
+          receive_bytes: ( src_stats?.receive_bytes || 0 ) + ( dst_stats?.receive_bytes || 0 ),
+          transmit_packets: ( src_stats?.transmit_packets || 0 ) + ( dst_stats?.transmit_packets || 0 ),
+          receive_packets: ( src_stats?.receive_packets || 0 ) + ( dst_stats?.receive_packets || 0 ),
+          transmit_errors: ( src_stats?.transmit_errors || 0 ) + ( dst_stats?.transmit_errors || 0 ),
+          receive_errors: ( src_stats?.receive_errors || 0 ) + ( dst_stats?.receive_errors || 0 ),
+          transmit_dropped: ( src_stats?.transmit_dropped || 0 ) + ( dst_stats?.transmit_dropped || 0 ),
+          receive_dropped: ( src_stats?.receive_dropped || 0 ) + ( dst_stats?.receive_dropped || 0 ),
+        },
+        metadata: {
+          ...link.metadata,
+          src_port_name: src_desc?.name,
+          dst_port_name: dst_desc?.name,
+        }
+      }
+    } )
 
     const nodes: Node[] = [
       controller_response,
@@ -41,8 +112,8 @@ export async function fetch_floodlight_topology( url: string ): Promise<Graph> {
 
     const links: Link[] = [
       ...switches_response.links,
-      ...links_response.links,
-      ...devices_response.links
+      ...enriched_switch_links,
+      ...enriched_host_links
     ]
 
     return {

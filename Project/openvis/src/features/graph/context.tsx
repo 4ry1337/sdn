@@ -144,7 +144,7 @@ export function GraphProvider( { children, ...props }: React.ComponentProps<"div
     } )
 
     set_nodes( prev => prev.filter( n => !n.id.startsWith( url ) ) )
-    set_links( prev => prev.filter( l => !( l.source as D3Node ).id.startsWith( url ) && !( l.target as D3Node ).id.startsWith( url ) ) )
+    set_links( prev => prev.filter( l => !l.source_id.startsWith( url ) && !l.target_id.startsWith( url ) ) )
 
     toast.info( `Disconnected from ${url}` )
   }, [ controllers, save_controllers ] )
