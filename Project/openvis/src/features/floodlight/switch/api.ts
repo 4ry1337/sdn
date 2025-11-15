@@ -86,10 +86,45 @@ export const floodlight_fetch_switches = async ( url: string ): Promise<Graph> =
           port: ports,
         }
       } ),
-      links: switches.map( value => ( {
-        source_id: url,
-        target_id: add_prefix( url, value.switchDPID )
-      } ) )
+      links: switches.map( value => {
+        const data = switch_data_map.get( value.switchDPID )
+        const ports = data?.port_stats_response || []
+
+        const total_tx_bytes = ports.reduce( ( sum, p ) => sum + ( p.transmit_bytes || 0 ), 0 )
+        const total_rx_bytes = ports.reduce( ( sum, p ) => sum + ( p.receive_bytes || 0 ), 0 )
+        const total_tx_packets = ports.reduce( ( sum, p ) => sum + ( p.transmit_packets || 0 ), 0 )
+        const total_rx_packets = ports.reduce( ( sum, p ) => sum + ( p.receive_packets || 0 ), 0 )
+        const total_tx_errors = ports.reduce( ( sum, p ) => sum + ( p.transmit_errors || 0 ), 0 )
+        const total_rx_errors = ports.reduce( ( sum, p ) => sum + ( p.receive_errors || 0 ), 0 )
+        const total_tx_dropped = ports.reduce( ( sum, p ) => sum + ( p.transmit_dropped || 0 ), 0 )
+        const total_rx_dropped = ports.reduce( ( sum, p ) => sum + ( p.receive_dropped || 0 ), 0 )
+
+        const avg_duration = ports.length > 0
+          ? ports.reduce( ( sum, p ) => sum + ( p.duration_sec || 0 ), 0 ) / ports.length
+          : 1
+        const tx_bandwidth = avg_duration > 0 ? total_tx_bytes / avg_duration : 0
+        const rx_bandwidth = avg_duration > 0 ? total_rx_bytes / avg_duration : 0
+        const utilization = ( tx_bandwidth + rx_bandwidth ) / 2
+
+        return {
+          source_id: url,
+          target_id: add_prefix( url, value.switchDPID ),
+          metrics: {
+            utilization: utilization,
+            transmit_bytes: total_tx_bytes,
+            receive_bytes: total_rx_bytes,
+            transmit_packets: total_tx_packets,
+            receive_packets: total_rx_packets,
+            transmit_errors: total_tx_errors,
+            receive_errors: total_rx_errors,
+            transmit_dropped: total_tx_dropped,
+            receive_dropped: total_rx_dropped,
+          },
+          metadata: {
+            link_type: 'controller-switch',
+          }
+        }
+      } )
     }
   } catch ( error ) {
     if ( error instanceof z.ZodError ) {

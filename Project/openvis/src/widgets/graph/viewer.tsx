@@ -68,8 +68,22 @@ export function GraphViewer() {
       .data( links )
       .join( 'g' )
 
-    const link = link_group.append( 'line' )
+    link_group.append( 'line' )
       .attr( 'class', 'graph-link' )
+      .attr( 'stroke', d => {
+        const utilization = d.metrics?.utilization ?? 0
+        if ( utilization === 0 ) return 'var(--foreground)'
+
+        const maxUtil = Math.max( ...links.map( l => l.metrics?.utilization ?? 0 ) )
+        const normalizedUtil = maxUtil > 0 ? utilization / maxUtil : 0
+
+        const green = { r: 34, g: 197, b: 94 }
+        const red = { r: 239, g: 68, b: 68 }
+        const r = Math.round( green.r + ( red.r - green.r ) * normalizedUtil )
+        const g = Math.round( green.g + ( red.g - green.g ) * normalizedUtil )
+        const b = Math.round( green.b + ( red.b - green.b ) * normalizedUtil )
+        return `rgb(${r},${g},${b})`
+      } )
 
     link_group.append( 'line' )
       .attr( 'class', 'graph-link-overlay' )
@@ -116,7 +130,8 @@ export function GraphViewer() {
         if ( !event.active ) simulation.alphaTarget( 0.3 ).restart()
         d.fx = d.x
         d.fy = d.y
-        link.filter( l => ( l.source as D3Node ).id === d.id || ( l.target as D3Node ).id === d.id )
+        link_group.selectAll<SVGLineElement, D3Link>( '.graph-link' )
+          .filter( l => ( l.source as D3Node ).id === d.id || ( l.target as D3Node ).id === d.id )
           .classed( 'graph-link-highlighted', true )
       } )
       .on( 'drag', ( event, d ) => {
@@ -127,12 +142,13 @@ export function GraphViewer() {
         if ( !event.active ) simulation.alphaTarget( 0 )
         d.fx = null
         d.fy = null
-        link.classed( 'graph-link-highlighted', false )
+        link_group.selectAll( '.graph-link' ).classed( 'graph-link-highlighted', false )
       } )
     node.call( drag )
 
     simulation.on( 'tick', () => {
-      link.attr( 'x1', d => ( d.source as D3Node ).x ?? 0 )
+      link_group.selectAll<SVGLineElement, D3Link>( 'line' )
+        .attr( 'x1', d => ( d.source as D3Node ).x ?? 0 )
         .attr( 'y1', d => ( d.source as D3Node ).y ?? 0 )
         .attr( 'x2', d => ( d.target as D3Node ).x ?? 0 )
         .attr( 'y2', d => ( d.target as D3Node ).y ?? 0 )

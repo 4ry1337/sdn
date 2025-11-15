@@ -8,12 +8,29 @@ import { floodlight_fetch_controller } from './controller'
 
 export async function fetch_floodlight_topology( url: string ): Promise<Graph> {
   try {
-    // Fetch topology data and port statistics in parallel
-    const [ controller_response, switches_response, links_response, devices_response ] = await Promise.all( [
+    // Fetch controller and switches first (switches include all port data)
+    const [ controller_response, switches_response ] = await Promise.all( [
       floodlight_fetch_controller( url ),
       floodlight_fetch_switches( url ),
-      floodlight_fetch_links( url ),
-      floodlight_fetch_hosts( url )
+    ] )
+
+    // Extract port data from switch nodes to avoid duplicate fetching
+    const port_stats_map = new Map()
+    const port_desc_map = new Map()
+    switches_response.nodes.forEach( node => {
+      if ( node.type === 'switch' && node.port ) {
+        const dpid = node.id.split( '::' )[ 1 ]
+        if ( dpid ) {
+          port_stats_map.set( dpid, node.port.map( p => ( { ...p.metrics, port_number: p.port_number } ) ) )
+          port_desc_map.set( dpid, node.port.map( p => ( { ...p.metadata, port_number: p.port_number } ) ) )
+        }
+      }
+    } )
+
+    // Fetch links and hosts, passing the cached port data
+    const [ links_response, devices_response ] = await Promise.all( [
+      floodlight_fetch_links( url, port_stats_map, port_desc_map ),
+      floodlight_fetch_hosts( url, port_stats_map, port_desc_map )
     ] )
 
     const nodes: Node[] = [

@@ -145,9 +145,25 @@ export const NodeSchema = z.discriminatedUnion( 'type', [
 ] )
 
 export const LinkMetricsSchema = z.object( {
+  utilization: z.number().optional(),
+  transmit_bytes: z.number().optional(),
+  receive_bytes: z.number().optional(),
+  transmit_packets: z.number().optional(),
+  receive_packets: z.number().optional(),
+  transmit_errors: z.number().optional(),
+  receive_errors: z.number().optional(),
+  transmit_dropped: z.number().optional(),
+  receive_dropped: z.number().optional(),
+  latency: z.number().optional(),
 } )
 
 export const LinkMetadataSchema = z.object( {
+  src_port: z.string().optional(),
+  dst_port: z.string().optional(),
+  link_type: z.string().optional(),
+  direction: z.string().optional(),
+  src_port_name: z.string().optional(),
+  dst_port_name: z.string().optional(),
 } )
 
 export const LinkSchema = z.object( {

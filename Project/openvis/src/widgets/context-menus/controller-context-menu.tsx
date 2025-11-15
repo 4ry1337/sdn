@@ -1,6 +1,7 @@
 "use client"
 
-import { D3Node } from "@/features/graph"
+import { D3Node, useGraph } from "@/features/graph"
+import { flushSync } from "react-dom"
 import {
   ContextMenuLabel,
   ContextMenuSeparator,
@@ -13,6 +14,8 @@ type ControllerContextMenuProps = {
 }
 
 export const ControllerContextMenu = ( { node }: ControllerContextMenuProps ) => {
+  const { graph } = useGraph()
+
   if ( node.type !== 'controller' ) {
     return (
       <ContextMenuGroup>
@@ -22,11 +25,21 @@ export const ControllerContextMenu = ( { node }: ControllerContextMenuProps ) =>
     )
   }
 
+  const handleDisconnect = () => {
+    flushSync( () => {
+      graph.disconnect( node.id )
+    } )
+  }
+
   return (
     <ContextMenuGroup>
       <ContextMenuLabel>
         Controller: {node.label}
       </ContextMenuLabel>
+      <ContextMenuSeparator />
+      <ContextMenuItem onClick={handleDisconnect} className="text-destructive focus:text-destructive">
+        Disconnect Controller
+      </ContextMenuItem>
       <ContextMenuSeparator />
       <ContextMenuLabel className="text-xs text-muted-foreground px-2">
         Network Information{!node.metadata && ': Unavailable'}

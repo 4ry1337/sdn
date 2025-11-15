@@ -116,7 +116,7 @@ export const SwitchContextMenu = ( { node }: SwitchContextMenuProps ) => {
                           MAC: {port.metadata.hardware_address}
                         </ContextMenuItem>
                         <ContextMenuItem>
-                          State: {port.metadata.state.join(', ') || 'None'}
+                          State: {port.metadata.state?.join(', ') || 'None'}
                         </ContextMenuItem>
                         <ContextMenuItem>
                           Speed: {port.metadata.curr_speed} / {port.metadata.max_speed}
@@ -128,28 +128,28 @@ export const SwitchContextMenu = ( { node }: SwitchContextMenuProps ) => {
                       Port Metrics
                     </ContextMenuLabel>
                     <ContextMenuItem>
-                      RX Packets: {port.metrics.receive_packets.toLocaleString()}
+                      RX Packets: {port.metrics.receive_packets?.toLocaleString() || 0}
                     </ContextMenuItem>
                     <ContextMenuItem>
-                      TX Packets: {port.metrics.transmit_packets.toLocaleString()}
+                      TX Packets: {port.metrics.transmit_packets?.toLocaleString() || 0}
                     </ContextMenuItem>
                     <ContextMenuItem>
-                      RX Bytes: {(port.metrics.receive_bytes / 1024 / 1024).toFixed(2)} MB
+                      RX Bytes: {((port.metrics.receive_bytes || 0) / 1024 / 1024).toFixed(2)} MB
                     </ContextMenuItem>
                     <ContextMenuItem>
-                      TX Bytes: {(port.metrics.transmit_bytes / 1024 / 1024).toFixed(2)} MB
+                      TX Bytes: {((port.metrics.transmit_bytes || 0) / 1024 / 1024).toFixed(2)} MB
                     </ContextMenuItem>
                     <ContextMenuItem>
-                      RX Errors: {port.metrics.receive_errors}
+                      RX Errors: {port.metrics.receive_errors || 0}
                     </ContextMenuItem>
                     <ContextMenuItem>
-                      TX Errors: {port.metrics.transmit_errors}
+                      TX Errors: {port.metrics.transmit_errors || 0}
                     </ContextMenuItem>
                     <ContextMenuItem>
-                      RX Dropped: {port.metrics.receive_dropped}
+                      RX Dropped: {port.metrics.receive_dropped || 0}
                     </ContextMenuItem>
                     <ContextMenuItem>
-                      TX Dropped: {port.metrics.transmit_dropped}
+                      TX Dropped: {port.metrics.transmit_dropped || 0}
                     </ContextMenuItem>
                   </ContextMenuSubContent>
                 </ContextMenuSub>

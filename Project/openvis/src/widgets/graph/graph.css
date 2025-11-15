@@ -1,7 +1,6 @@
 .graph-link {
   opacity: 0.6;
   stroke-width: 2;
-  stroke: var(--primary);
 }
 
 .graph-link-highlighted {
