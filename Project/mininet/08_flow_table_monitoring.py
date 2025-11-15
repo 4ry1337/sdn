@@ -23,7 +23,6 @@ Usage:
 
 import time
 import argparse
-import json
 from mininet.net import Mininet
 from mininet.node import RemoteController, OVSSwitch
 from mininet.cli import CLI

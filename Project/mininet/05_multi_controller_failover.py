@@ -29,6 +29,7 @@ Usage:
 
 import time
 import subprocess
+import argparse
 from mininet.net import Mininet
 from mininet.node import RemoteController, OVSSwitch
 from mininet.cli import CLI
@@ -48,7 +49,7 @@ def check_controller_status(ip, port):
         return False
 
 
-def multi_controller_topology():
+def multi_controller_topology(c0_ip='127.0.0.1', c0_port=6653, c1_ip='127.0.0.1', c1_port=6654):
     """Create topology with multiple controllers"""
 
     info('*** Creating network with multiple controllers\n')
@@ -63,19 +64,19 @@ def multi_controller_topology():
     c0 = net.addController(
         'c0',
         controller=RemoteController,
-        ip='127.0.0.1',
-        port=6653
+        ip=c0_ip,
+        port=c0_port
     )
-    info('  c0: Primary controller at 127.0.0.1:6653\n')
+    info(f'  c0: Primary controller at {c0_ip}:{c0_port}\n')
 
     # Backup controller
     c1 = net.addController(
         'c1',
         controller=RemoteController,
-        ip='127.0.0.1',
-        port=6654
+        ip=c1_ip,
+        port=c1_port
     )
-    info('  c1: Backup controller at 127.0.0.1:6654\n')
+    info(f'  c1: Backup controller at {c1_ip}:{c1_port}\n')
 
     info('*** Building topology\n')
     # Create switches with both controllers
@@ -102,7 +103,7 @@ def multi_controller_topology():
     info('*** Configuring multi-controller setup\n')
     for switch in [s1, s2, s3]:
         switch.cmd('ovs-vsctl set-controller', switch.name,
-                   'tcp:127.0.0.1:6653 tcp:127.0.0.1:6654')
+                   f'tcp:{c0_ip}:{c0_port} tcp:{c1_ip}:{c1_port}')
         info(f'  {switch.name}: Connected to both controllers\n')
 
     info('*** Waiting for network stabilization (5s)...\n')
@@ -232,15 +233,45 @@ def run_automated_failover_test():
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Multi-Controller Failover Test')
+    parser.add_argument(
+        '--c0-ip',
+        default='127.0.0.1',
+        help='Primary controller IP (default: 127.0.0.1)'
+    )
+    parser.add_argument(
+        '--c0-port',
+        type=int,
+        default=6653,
+        help='Primary controller port (default: 6653)'
+    )
+    parser.add_argument(
+        '--c1-ip',
+        default='127.0.0.1',
+        help='Backup controller IP (default: 127.0.0.1)'
+    )
+    parser.add_argument(
+        '--c1-port',
+        type=int,
+        default=6654,
+        help='Backup controller port (default: 6654)'
+    )
+    parser.add_argument(
+        '--auto',
+        action='store_true',
+        help='Run automated failover test'
+    )
+    args = parser.parse_args()
+
     setLogLevel('info')
 
     # Check if controllers are running
     info('*** Checking controller availability\n')
-    c0_status = check_controller_status('127.0.0.1', 6653)
-    c1_status = check_controller_status('127.0.0.1', 6654)
+    c0_status = check_controller_status(args.c0_ip, args.c0_port)
+    c1_status = check_controller_status(args.c1_ip, args.c1_port)
 
-    info(f'  Controller c0 (port 6653): {"✓ Running" if c0_status else "✗ Not available"}\n')
-    info(f'  Controller c1 (port 6654): {"✓ Running" if c1_status else "✗ Not available"}\n')
+    info(f'  Controller c0 ({args.c0_ip}:{args.c0_port}): {"✓ Running" if c0_status else "✗ Not available"}\n')
+    info(f'  Controller c1 ({args.c1_ip}:{args.c1_port}): {"✓ Running" if c1_status else "✗ Not available"}\n')
 
     if not c0_status and not c1_status:
         error('\n*** ERROR: No controllers are running!\n')
@@ -251,4 +282,12 @@ if __name__ == '__main__':
         warn('\n*** WARNING: Only one controller is running\n')
         warn('*** For full failover testing, start both controllers\n\n')
 
-    multi_controller_topology()
+    if args.auto:
+        run_automated_failover_test()
+    else:
+        multi_controller_topology(
+            c0_ip=args.c0_ip,
+            c0_port=args.c0_port,
+            c1_ip=args.c1_ip,
+            c1_port=args.c1_port
+        )
