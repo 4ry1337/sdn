@@ -15,11 +15,11 @@ interface FlowStats {
 }
 
 interface FlowStatsPanelProps {
-  stats: FlowStats[]
+  stats?: FlowStats[]
   className?: string
 }
 
-export function FlowStatsPanel({ stats, className }: FlowStatsPanelProps) {
+export function FlowStatsPanel({ stats = [], className }: FlowStatsPanelProps) {
   const total_flows = stats.reduce((sum, s) => sum + s.flow_count, 0)
   const total_active = stats.reduce((sum, s) => sum + s.active_flows, 0)
   const total_packets = stats.reduce((sum, s) => sum + s.total_packets, 0)
@@ -46,6 +46,12 @@ export function FlowStatsPanel({ stats, className }: FlowStatsPanelProps) {
         <CardDescription>Real-time OpenFlow table monitoring</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {stats.length === 0 ? (
+          <div className="text-center text-sm text-muted-foreground py-8">
+            No flow statistics available. Connect to an SDN controller to see flow data.
+          </div>
+        ) : (
+          <>
         {/* Global Stats */}
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
@@ -130,6 +136,8 @@ export function FlowStatsPanel({ stats, className }: FlowStatsPanelProps) {
               })}
             </div>
           </>
+        )}
+        </>
         )}
       </CardContent>
     </Card>

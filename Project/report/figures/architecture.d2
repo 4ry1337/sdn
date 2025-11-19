@@ -1,0 +1,190 @@
+direction: right
+
+title: OpenVis Client-Server Architecture with SSE Streaming {
+  near: top-center
+  shape: text
+  style: {
+    font-size: 24
+    bold: true
+  }
+}
+
+# CLIENT SIDE
+client: {
+  label: "Client (Web Browser)"
+  shape: rectangle
+  style.fill: "#e3f2fd"
+  style.stroke: "#2196f3"
+  style.stroke-width: 3
+
+  react: {
+    label: "React UI\n+ D3.js Visualization"
+    style.fill: "#61dafb"
+    style.font-color: "#000000"
+  }
+
+  eventsource: {
+    label: "EventSource API\n(SSE Client)"
+    style.fill: "#0070f3"
+    style.font-color: "#ffffff"
+  }
+}
+
+# SERVER SIDE
+server: {
+  label: "Server (Next.js)"
+  shape: rectangle
+  style.fill: "#000000"
+  style.stroke: "#000000"
+  style.stroke-width: 3
+
+  sse_endpoint: {
+    label: "SSE Stream\n/api/stream"
+    style.fill: "#0070f3"
+    style.font-color: "#ffffff"
+  }
+
+  rest_api: {
+    label: "REST API\n/api/topology"
+    style.fill: "#68a063"
+    style.font-color: "#ffffff"
+  }
+
+  poller: {
+    label: "Controller Poller\n(1000ms interval)"
+    style.fill: "#f59e0b"
+    style.font-color: "#000000"
+  }
+}
+
+# SDN CONTROLLERS
+controllers: {
+  label: "Floodlight Controllers"
+
+  primary: {
+    label: "Primary\n:6653"
+    shape: cylinder
+    style.fill: "#22c55e"
+  }
+
+  backup: {
+    label: "Backup\n:6654"
+    shape: cylinder
+    style.fill: "#10b981"
+  }
+}
+
+# NETWORK
+network: {
+  label: "SDN Network"
+
+  elements: {
+    label: "Switches & Hosts"
+    shape: hexagon
+    style.fill: "#8b5cf6"
+  }
+}
+
+# KEY DATA FLOWS - SSE STREAMING (Primary Pattern)
+client.eventsource -> server.sse_endpoint: "1. SSE Connection\n(EventSource)" {
+  style.stroke: "#0070f3"
+  style.stroke-width: 4
+  style.stroke-dash: 0
+}
+
+server.sse_endpoint -> client.eventsource: "2. Real-time Stream\n(topology, metrics, events)" {
+  style.stroke: "#0070f3"
+  style.stroke-width: 4
+  style.animated: true
+}
+
+client.react -> client.eventsource: "Subscribe" {
+  style.stroke-dash: 3
+  style.stroke: "#2196f3"
+}
+
+client.eventsource -> client.react: "Update State" {
+  style.stroke-dash: 3
+  style.stroke: "#2196f3"
+}
+
+# Initial Load (HTTP)
+client.react -> server.rest_api: "3. Initial Load\n(HTTP GET)" {
+  style.stroke: "#68a063"
+  style.stroke-width: 2
+}
+
+server.rest_api -> client.react: "4. Bootstrap Data" {
+  style.stroke: "#68a063"
+  style.stroke-width: 2
+}
+
+# Server to Controllers
+server.poller -> controllers.primary: "Poll REST API\n/wm/core/..." {
+  style.stroke: "#f59e0b"
+  style.stroke-width: 2
+}
+
+server.poller -> controllers.backup: "Poll REST API\n/wm/core/..." {
+  style.stroke: "#f59e0b"
+  style.stroke-width: 2
+}
+
+server.poller -> server.sse_endpoint: "Push Updates" {
+  style.stroke-dash: 3
+  style.stroke: "#f59e0b"
+}
+
+# Controllers to Network
+controllers.primary -> network.elements: "OpenFlow Protocol" {
+  style.stroke: "#22c55e"
+  style.stroke-width: 2
+}
+
+controllers.backup -> network.elements: "OpenFlow Protocol" {
+  style.stroke: "#22c55e"
+  style.stroke-width: 2
+}
+
+# Legend
+legend: {
+  near: bottom-right
+  label: "Communication Patterns"
+  shape: rectangle
+  style.stroke-dash: 0
+
+  sse: {
+    label: "SSE Stream (Primary)"
+    style.stroke: "#0070f3"
+    style.stroke-width: 4
+  }
+
+  http: {
+    label: "HTTP/REST (Initial)"
+    style.stroke: "#68a063"
+    style.stroke-width: 2
+  }
+
+  polling: {
+    label: "Polling (Backend)"
+    style.stroke: "#f59e0b"
+    style.stroke-width: 2
+  }
+
+  openflow: {
+    label: "OpenFlow"
+    style.stroke: "#22c55e"
+    style.stroke-width: 2
+  }
+}
+
+# Layout hints
+client -> server: "" {
+  style.opacity: 0
+}
+server -> controllers: "" {
+  style.opacity: 0
+}
+controllers -> network: "" {
+  style.opacity: 0
+}

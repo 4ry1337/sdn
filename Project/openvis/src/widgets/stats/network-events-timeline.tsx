@@ -27,7 +27,7 @@ export interface NetworkEvent {
 }
 
 interface NetworkEventsTimelineProps {
-  events: NetworkEvent[]
+  events?: NetworkEvent[]
   maxEvents?: number
   className?: string
 }
@@ -57,40 +57,40 @@ const SEVERITY_COLORS = {
   error: 'bg-red-500',
 } as const
 
-export function NetworkEventsTimeline({
-  events,
+export function NetworkEventsTimeline( {
+  events = [],
   maxEvents = 50,
   className
-}: NetworkEventsTimelineProps) {
-  const recent_events = React.useMemo(() => {
-    return events.slice(0, maxEvents)
-  }, [events, maxEvents])
+}: NetworkEventsTimelineProps ) {
+  const recent_events = React.useMemo( () => {
+    return events.slice( 0, maxEvents )
+  }, [ events, maxEvents ] )
 
-  const format_time = (date: Date): string => {
+  const format_time = ( date: Date ): string => {
     const now = new Date()
     const diff = now.getTime() - date.getTime()
-    const seconds = Math.floor(diff / 1000)
-    const minutes = Math.floor(seconds / 60)
-    const hours = Math.floor(minutes / 60)
+    const seconds = Math.floor( diff / 1000 )
+    const minutes = Math.floor( seconds / 60 )
+    const hours = Math.floor( minutes / 60 )
 
-    if (seconds < 60) return `${seconds}s ago`
-    if (minutes < 60) return `${minutes}m ago`
-    if (hours < 24) return `${hours}h ago`
+    if ( seconds < 60 ) return `${seconds}s ago`
+    if ( minutes < 60 ) return `${minutes}m ago`
+    if ( hours < 24 ) return `${hours}h ago`
     return date.toLocaleTimeString()
   }
 
-  const event_stats = React.useMemo(() => {
+  const event_stats = React.useMemo( () => {
     const stats = {
       total: events.length,
       info: 0,
       warning: 0,
       error: 0,
     }
-    events.forEach(event => {
-      stats[event.severity]++
-    })
+    events.forEach( event => {
+      stats[ event.severity ]++
+    } )
     return stats
-  }, [events])
+  }, [ events ] )
 
   return (
     <Card className={className}>
@@ -125,16 +125,16 @@ export function NetworkEventsTimeline({
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-80">
-          <div className="space-y-2">
+          <div className="space-y-2 p-2">
             {recent_events.length === 0 ? (
               <div className="text-center text-sm text-muted-foreground py-8">
                 No events yet
               </div>
             ) : (
-              recent_events.map((event, index) => (
+              recent_events.map( ( event, index ) => (
                 <div
                   key={event.id}
-                  className={`relative p-3 rounded-lg border ${EVENT_COLORS[event.severity]} transition-all hover:scale-[1.02]`}
+                  className={`relative p-2 rounded-lg border ${EVENT_COLORS[ event.severity ]} transition-all hover:scale-[1.01]`}
                 >
                   {/* Timeline connector */}
                   {index < recent_events.length - 1 && (
@@ -144,8 +144,8 @@ export function NetworkEventsTimeline({
                   <div className="flex items-start gap-3">
                     {/* Event icon & severity indicator */}
                     <div className="relative flex-shrink-0">
-                      <div className={`w-8 h-8 rounded-full ${SEVERITY_COLORS[event.severity]} flex items-center justify-center text-white text-sm`}>
-                        {EVENT_ICONS[event.type]}
+                      <div className={`w-8 h-8 rounded-full ${SEVERITY_COLORS[ event.severity ]} flex items-center justify-center text-white text-sm`}>
+                        {EVENT_ICONS[ event.type ]}
                       </div>
                     </div>
 
@@ -153,32 +153,32 @@ export function NetworkEventsTimeline({
                     <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-center justify-between gap-2">
                         <p className="text-xs font-semibold capitalize">
-                          {event.type.replace(/_/g, ' ')}
+                          {event.type.replace( /_/g, ' ' )}
                         </p>
                         <span className="text-xs text-muted-foreground whitespace-nowrap">
-                          {format_time(event.timestamp)}
+                          {format_time( event.timestamp )}
                         </span>
                       </div>
                       <p className="text-xs">{event.message}</p>
 
                       {/* Metadata */}
-                      {event.metadata && Object.keys(event.metadata).length > 0 && (
+                      {event.metadata && Object.keys( event.metadata ).length > 0 && (
                         <div className="flex flex-wrap gap-1 pt-1">
-                          {Object.entries(event.metadata).map(([key, value]) => (
+                          {Object.entries( event.metadata ).map( ( [ key, value ] ) => (
                             <Badge
                               key={key}
                               variant="outline"
                               className="text-xs px-1.5 py-0"
                             >
-                              {key}: {String(value)}
+                              {key}: {String( value )}
                             </Badge>
-                          ))}
+                          ) )}
                         </div>
                       )}
                     </div>
                   </div>
                 </div>
-              ))
+              ) )
             )}
           </div>
         </ScrollArea>

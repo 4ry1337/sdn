@@ -1,0 +1,243 @@
+\documentclass[10pt]{beamer}
+
+\usepackage{graphicx}      % For including images
+\usepackage{hyperref}      % For clickable links
+\usepackage{listings}      % For code snippets
+
+\useoutertheme{miniframes}
+\setbeamertemplate{navigation symbols}{}
+
+\title[OpenVis: SDN Observability]{OpenVis: Real-Time Observability Tool for OpenFlow SDN Networks}
+\author{Rakhat Yskak}
+\institute[Nazarbayev University]{Department of Computer Science\\School of Engineering and Digital Sciences\\Nazarbayev University}
+\date{November 2025}
+\logo{\includegraphics[width=2.5cm]{NU_horizontal.png}}
+
+\begin{document}
+
+\frame{\titlepage}
+
+% Slide 1: The Problem (~30 seconds)
+\begin{frame}{The Observability Challenge in SDN}
+\begin{columns}
+\begin{column}{0.5\textwidth}
+    \begin{itemize}
+        \item SDN centralizes control, but creates a \textbf{visibility gap}
+        \item Operators need to see what controllers are doing
+        \item Topology changes happen dynamically
+        \item Multiple controllers add complexity
+    \end{itemize}
+    \pause
+    \begin{alertblock}{The Question}
+    How do we monitor SDN networks in real-time without manual refresh?
+    \end{alertblock}
+\end{column}
+\begin{column}{0.5\textwidth}
+    \begin{figure}
+        \centering
+        \fbox{\parbox{4cm}{\centering [Screenshot: OpenVis Interface]}}
+        \caption{Traditional tools miss real-time behavior}
+    \end{figure}
+\end{column}
+\end{columns}
+\end{frame}
+
+% Slide 2: Solution Overview (~45 seconds)
+\begin{frame}{Introducing OpenVis}
+\begin{block}{What is OpenVis?}
+Web-based observability tool for OpenFlow SDN networks with real-time visualization
+\end{block}
+
+\begin{columns}
+\begin{column}{0.5\textwidth}
+    \begin{block}{Key Features}
+        \begin{itemize}
+            \item Live topology visualization
+            \item Color-coded link utilization
+            \item Multi-controller monitoring
+            \item Flow statistics tracking
+            \item Network events timeline
+        \end{itemize}
+    \end{block}
+\end{column}
+\begin{column}{0.5\textwidth}
+    \begin{figure}
+        \centering
+        \fbox{\parbox{4.5cm}{\centering [Screenshot: Main Topology View]}}
+        \caption{Interactive force-directed graph}
+    \end{figure}
+\end{column}
+\end{columns}
+\end{frame}
+
+% Slide 3: Architecture (~1 minute)
+\begin{frame}{System Architecture}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/architecture.png}
+    \caption{Client-server architecture with SSE streaming}
+\end{figure}
+
+\begin{block}{Technology Stack}
+    \begin{itemize}
+        \item \textbf{Frontend:} React + TypeScript + D3.js force-directed graphs
+        \item \textbf{Backend:} Next.js with Server-Sent Events (SSE)
+        \item \textbf{Controllers:} Floodlight via standard OpenFlow REST API
+        \item \textbf{Key Innovation:} Real-time updates without polling from client
+    \end{itemize}
+\end{block}
+\end{frame}
+
+% Slide 4: Key Features (~1 minute)
+\begin{frame}{Core Capabilities}
+
+\begin{block}{1. Real-Time Topology Visualization}
+\begin{itemize}
+    \item D3.js force-directed graph with automatic layout
+    \item Interactive: drag nodes, zoom, pan
+    \item Color coding: green (controllers), blue (switches), purple (hosts)
+\end{itemize}
+\end{block}
+
+\begin{block}{2. Traffic Monitoring}
+\begin{itemize}
+    \item Links colored by utilization: green (low) → yellow (medium) → red (high)
+    \item Bottlenecks become immediately visible
+    \item Port statistics and bandwidth metrics
+\end{itemize}
+\end{block}
+
+\begin{block}{3. Multi-Controller Support}
+\begin{itemize}
+    \item Monitor multiple controllers simultaneously
+    \item Health status indicators with auto-reconnect
+    \item Failover detection
+\end{itemize}
+\end{block}
+
+\end{frame}
+
+% Slide 5: Implementation Details (~45 seconds)
+\begin{frame}{Technical Implementation}
+
+\begin{block}{Server-Sent Events (SSE) Streaming}
+    \begin{itemize}
+        \item Backend polls Floodlight REST API (configurable interval)
+        \item Server pushes updates to clients via SSE
+        \item Client receives real-time topology changes without refresh
+        \item Automatic error handling and retry logic
+    \end{itemize}
+\end{block}
+
+\begin{block}{Flow Statistics \& Events}
+    \begin{itemize}
+        \item Track flow counts, packet/byte counters per switch
+        \item TCAM capacity monitoring with warnings
+        \item Timeline of network events: links up/down, switch/host changes
+    \end{itemize}
+\end{block}
+
+\end{frame}
+
+% Slide 6: Testing & Validation (~45 seconds)
+\begin{frame}{Testing and Validation}
+
+\begin{block}{Test Environment}
+    \begin{itemize}
+        \item \textbf{Emulation:} Mininet network emulator
+        \item \textbf{Controllers:} Floodlight in Docker containers
+        \item \textbf{Traffic Generation:} iperf for bandwidth testing
+    \end{itemize}
+\end{block}
+
+\begin{block}{8 Test Scenarios}
+    \begin{enumerate}
+        \item Simple topology (3 switches)
+        \item Linear topology (scalability)
+        \item Tree topology (hierarchical)
+        \item Traffic load testing
+        \item \textbf{Multi-controller failover}
+        \item Link failure recovery
+        \item Congestion patterns (elephant flows, hotspots)
+        \item Flow table monitoring (1000+ flows)
+    \end{enumerate}
+\end{block}
+
+\alert{All tests passed: topology changes, controller states, and traffic patterns visualized correctly}
+
+\end{frame}
+
+% Slide 7: Demo Transition (~30 seconds)
+\begin{frame}{Live Demonstration}
+
+\begin{block}{What You'll See}
+    \begin{itemize}
+        \item Connecting to Floodlight controller
+        \item Real-time topology discovery
+        \item Traffic visualization with color-coded links
+        \item Controller health monitoring
+        \item Flow statistics and network events
+    \end{itemize}
+\end{block}
+
+\begin{center}
+\Large{\textbf{Let's see it in action!}}
+
+\vspace{1em}
+
+\normalsize
+\textit{Demo: OpenVis monitoring a Mininet network}
+\end{center}
+
+\end{frame}
+
+% Slide 8: Conclusion & Future Work (~30 seconds)
+\begin{frame}{Conclusion}
+
+\begin{block}{What I Built}
+A web-based real-time observability tool that helps network operators understand SDN behavior through:
+\begin{itemize}
+    \item Interactive topology visualization (D3.js)
+    \item Live traffic monitoring (SSE streaming)
+    \item Multi-controller health tracking
+    \item Flow statistics and event timeline
+\end{itemize}
+\end{block}
+
+\pause
+
+\begin{block}{Future Enhancements}
+    \begin{itemize}
+        \item Historical data storage and trend analysis
+        \item Support for ONOS and OpenDaylight controllers
+        \item Alert notifications for critical events
+        \item Machine learning for anomaly detection
+    \end{itemize}
+\end{block}
+
+\end{frame}
+
+% Slide 9: Thank You + Q&A
+\begin{frame}{Thank You}
+\begin{center}
+\Large{\textbf{OpenVis: Real-Time SDN Observability}}
+
+\vspace{1em}
+
+\normalsize
+\textbf{Rakhat Yskak}\\
+Department of Computer Science\\
+Nazarbayev University
+
+\vspace{1.5em}
+
+\textbf{GitHub Repository:}\\
+\url{https://github.com/4ry1337/sdn/tree/main/Project}
+
+\vspace{1.5em}
+
+\Large{\textbf{Questions?}}
+\end{center}
+\end{frame}
+
+\end{document}

@@ -1,0 +1,269 @@
+%% OpenVis: Real-Time Observability Tool for OpenFlow SDN Networks
+%% IEEE Conference Paper Format
+%% Based on IEEEtran.cls version 1.8b
+
+\documentclass[conference]{IEEEtran}
+
+% *** PACKAGES ***
+\usepackage{cite}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{algorithmic}
+\usepackage[caption=false,font=footnotesize]{subfig}
+
+% Declare graphics path
+\graphicspath{{./figures/}}
+\DeclareGraphicsExtensions{.pdf,.jpeg,.png}
+
+\hyphenation{op-tical net-works semi-conduc-tor Open-Flow}
+
+\begin{document}
+
+\title{OpenVis: Real-Time Observability Tool\\for OpenFlow SDN Networks}
+
+\author{\IEEEauthorblockN{Rakhat Yskak}
+\IEEEauthorblockA{Department of Computer Science\\
+School of Engineering and Digital Sciences\\
+Nazarbayev University\\
+Astana, Kazakhstan\\
+Email: rakhat.yskak@nu.edu.kz}}
+
+\maketitle
+
+\begin{abstract}
+Software-Defined Networking (SDN) separates network control from data forwarding. This separation enables flexible network management but creates observability challenges. Network operators need real-time visibility into topology changes, traffic patterns, and controller behavior. I present OpenVis, a web-based observability tool for OpenFlow networks. OpenVis provides real-time network visualization, multi-controller monitoring, and flow table analysis. The system uses Server-Sent Events for live updates and D3.js for interactive topology graphs. I validate OpenVis through four test scenarios: controller failover, link failure recovery, traffic congestion patterns, and flow table stress testing. The tool successfully monitors networks with multiple controllers and provides immediate visual feedback on topology changes. OpenVis helps network operators understand SDN behavior and diagnose performance issues.
+\end{abstract}
+
+\section{Introduction}
+
+SDN transforms network management by centralizing control logic. Controllers manage forwarding devices through standardized protocols like OpenFlow. This architecture provides flexibility but reduces visibility. Traditional monitoring tools cannot track controller decisions or flow table updates.
+
+Network operators face three key challenges. First, topology changes happen dynamically as devices join or leave. Second, multiple controllers create coordination complexity. Third, flow tables have limited capacity and require careful monitoring.
+
+I developed OpenVis to address these challenges. OpenVis is a web-based tool that visualizes SDN networks in real-time. The system connects to Floodlight controllers and displays topology, link utilization, and flow statistics. OpenVis supports multiple simultaneous controllers and tracks their health status.
+
+My contributions include:
+\begin{itemize}
+\item Real-time topology visualization with automatic layout
+\item Multi-controller health monitoring with failover detection
+\item Link utilization tracking with color-coded visual feedback
+\item Flow table statistics and TCAM capacity monitoring
+\item Network event timeline with severity classification
+\end{itemize}
+
+I validate OpenVis using Mininet test scenarios. These tests include controller failover, link failures, and congestion patterns. OpenVis correctly identifies topology changes and controller state transitions.
+
+\section{Background and Related Work}
+
+\subsection{OpenFlow Protocol}
+
+OpenFlow enables SDN by separating control and data planes. Switches maintain flow tables with matching rules and actions. Controllers install these rules through OpenFlow messages. The protocol supports topology discovery, statistics collection, and event notifications.
+
+OpenFlow 1.3 introduced several improvements. Multiple flow tables enable complex packet processing pipelines. Group tables support multicast and failover scenarios. Meters provide rate limiting and quality-of-service features.
+
+\subsection{Existing Monitoring Tools}
+
+Several SDN monitoring solutions exist. Floodlight includes a web UI with basic topology display. OpenDaylight provides DLUX for network visualization. These tools focus on configuration rather than real-time observability.
+
+Commercial solutions offer advanced features but lack flexibility. They often require specific controller versions or proprietary agents. Academic prototypes explore novel monitoring approaches but remain research tools.
+
+OpenVis differs by emphasizing live observability. The tool updates continuously without manual refresh. It supports multiple controllers simultaneously and tracks their coordination. Flow table monitoring prevents TCAM exhaustion before it occurs.
+
+\section{System Architecture}
+
+\subsection{Design Principles}
+
+OpenVis follows three core principles. First, real-time updates keep operators informed immediately. Second, controller-agnostic design works with standard OpenFlow APIs. Third, minimal overhead avoids impacting network performance.
+
+The architecture uses a client-server model. The backend fetches data from controllers using REST APIs. Server-Sent Events stream updates to clients. The frontend renders interactive visualizations using D3.js.
+
+\subsection{Component Overview}
+
+The backend implements API endpoints for each controller type. The topology endpoint fetches switches, hosts, and links. The health endpoint verifies controller availability. Streaming endpoints push updates through Server-Sent Events.
+
+The frontend manages visualization state. React components handle user interactions. D3.js renders the force-directed graph. Context menus display detailed statistics for nodes and links.
+
+\subsection{Technology Stack}
+
+OpenVis uses modern web technologies. Next.js provides server-side rendering and API routes. React enables component-based UI development. D3.js handles graph layout and visualization. TypeScript ensures type safety across the codebase.
+
+The backend runs Node.js with Bun runtime for performance. Storage uses browser localStorage for controller configuration. No database is required, keeping deployment simple.
+
+\section{Implementation}
+
+\subsection{Topology Discovery}
+
+OpenVis discovers topology through Floodlight REST APIs. The system polls multiple endpoints: switches, links, and hosts. Data arrives in separate responses and merges into a unified graph.
+
+Each network element receives a unique identifier. Controllers prefix their URL to element IDs. This prevents collisions when multiple controllers manage different domains.
+
+Topology changes trigger graph updates. New nodes appear with smooth animations. Removed nodes fade out gracefully. Link additions and removals update the force simulation.
+
+\subsection{Real-Time Updates}
+
+Server-Sent Events enable real-time streaming. The backend establishes EventSource connections to poll controller APIs. Updates push to clients every 1000 milliseconds by default.
+
+The system handles controller failures gracefully. Connection errors trigger exponential backoff. After five consecutive failures, the controller marks as unreachable. Automatic retry attempts reconnection every 30 seconds.
+
+Figure \ref{fig:topology} shows the main visualization interface.
+
+\begin{figure*}[!t]
+    \centering
+    \includegraphics[width=1\linewidth]{main-interface.png}
+\caption{OpenVis main interface displaying network topology with real-time metrics.}
+\label{fig:topology}
+\end{figure*}
+
+\subsection{Multi-Controller Support}
+
+OpenVis supports multiple simultaneous controllers. Users add controllers through a connection form. Each controller maintains independent state and event stream.
+
+The system tracks five controller states: connecting, connected, unreachable, error, and disconnected. Visual indicators show current status. A pulsing green dot indicates active connections.
+
+Controller failover detection works automatically. When primary controller fails, OpenVis continues displaying topology from backup controllers. Network elements associated with failed controllers remain visible but marked inactive.
+
+\subsection{Link Utilization Visualization}
+
+Link colors indicate utilization levels. Green represents low traffic. Yellow shows moderate utilization. Red marks congestion.
+
+The system calculates relative utilization across all links. This normalization highlights bottlenecks even without absolute bandwidth limits. Port statistics provide transmit and receive byte counts.
+
+Context menus display detailed metrics. Users right-click links to view throughput, packet counts, errors, and drops. Data formats automatically scale to appropriate units (KB, MB, GB).
+
+Figure \ref{fig:utilization} demonstrates link utilization visualization.
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=1\linewidth]{link-util.png}
+\caption{Link utilization shown through color-coded visualization.}
+\label{fig:utilization}
+\end{figure}
+
+\section{Experimental Validation}
+
+I validate OpenVis using Mininet network emulator with Floodlight controllers running in Docker containers. I created eight test scenarios to verify different observability features. Each test uses Python scripts to create network topologies and generate traffic patterns.
+
+\textbf{Test 01: Simple Topology} creates a basic network with three switches and four hosts in a linear arrangement. This test validates basic topology discovery and visualization.
+
+\textbf{Test 02: Linear Topology} builds scalable linear networks with configurable switch counts. This test evaluates performance with varying network sizes.
+
+\textbf{Test 03: Tree Topology} generates hierarchical tree structures with configurable depth and fanout. This test stresses the force-directed graph layout algorithm.
+
+\textbf{Test 04: Traffic Load} creates continuous high-traffic scenarios using iperf. This test validates link utilization visualization and color-coding accuracy.
+
+\textbf{Test 05: Multi-Controller Failover}
+
+tests controller redundancy. Three switches connect to two controllers on ports 6653 and 6654. When I stop the primary controller, OpenVis detects the failure and updates status to "unreachable". The network topology remains visible through the backup controller. Automatic reconnection works when the primary controller restarts.
+
+\textbf{Test 06: Link Failure Recovery} validates topology change detection. Four switches form a redundant mesh topology. When I disable links using Mininet commands, OpenVis removes them from visualization. The graph layout adjusts automatically. Link restoration triggers immediate topology updates.
+
+\textbf{Test 07: Congestion Patterns} evaluates traffic visualization. I generate four patterns: elephant flows (large sustained transfers), hotspot congestion (many-to-one traffic), mixed traffic (combination of large and small flows), and oscillating traffic (periodic bursts). OpenVis color-codes links based on utilization levels.
+
+\textbf{Test 08: Flow Table Monitoring} stresses flow statistics tracking. I create up to 1000 unique flows using different UDP ports. OpenVis displays flow counts, active versus idle flows, and TCAM utilization warnings.
+
+All eight tests completed successfully. OpenVis correctly visualized topology changes, controller states, link utilization, and flow statistics. The force-directed graph rendered smoothly across different topology types. Color-coded links accurately reflected traffic levels. Controller health monitoring worked reliably during failover scenarios. Context menus displayed detailed statistics for all network elements.
+
+\section{Results and Discussion}
+
+\subsection{Scalability Observations}
+
+OpenVis handles moderate-scale networks well. Testing with 100 nodes shows smooth graph rendering. Force simulation remains interactive even with 150 links.
+
+Larger networks may require optimization. Graph layout becomes cluttered above 200 nodes. Filtering options help manage complexity by hiding specific node types.
+
+Multiple controllers scale linearly. Each controller adds independent overhead. The system maintains reasonable memory usage even with multiple simultaneous controllers.
+
+\subsection{Usability Insights}
+
+Color-coded links prove highly effective. Operators immediately spot congestion without reading numbers. Red links draw attention to problem areas.
+
+Context menus provide convenient access to details. Right-click interaction feels natural for desktop users. Mobile support would require alternative interaction patterns.
+
+The event timeline aids troubleshooting. Operators can review recent changes when investigating issues. Severity filtering helps focus on critical events.
+
+\subsection{Limitations}
+
+OpenVis has several limitations. First, it depends on controller REST APIs. Non-standard controllers require custom adapters. Second, polling intervals trade freshness for overhead. More frequent updates increase controller load.
+
+Third, no historical data persists. All information exists in memory. Page refresh loses timeline events. Fourth, the tool provides monitoring only. It cannot modify network configuration.
+
+Fifth, visualization struggles with very large topologies. Dense graphs become difficult to interpret. Automatic layout algorithms cannot always prevent overlap.
+
+\section{Future Work}
+
+Several enhancements would improve OpenVis. Historical data storage would enable trend analysis. Operators could compare current state against past baselines.
+
+Alert notifications would support proactive monitoring. Browser notifications could warn about critical events. Email or webhook integration would enable broader alerting.
+
+Custom dashboard layouts would improve usability. Operators could arrange panels according to preferences. Saved configurations would persist across sessions.
+
+Machine learning could predict issues. Training on historical patterns might forecast congestion or failures. Anomaly detection would highlight unusual behavior.
+
+Performance optimization would support larger networks. Graph virtualization could render only visible nodes. Clustering algorithms could group related nodes.
+
+Additional controller support would broaden applicability. ONOS and OpenDaylight adapters would serve more deployments. A plugin architecture could simplify adding new controllers.
+
+\section{Conclusion}
+
+I presented OpenVis, a real-time observability tool for OpenFlow SDN networks. The system provides live topology visualization, multi-controller monitoring, and flow table analysis. Server-Sent Events enable continuous updates without manual refresh.
+
+Experimental validation confirms OpenVis effectiveness. The tool correctly detects controller failures, topology changes, and congestion patterns. Visual feedback appears immediately when network state changes.
+
+OpenVis helps network operators understand SDN behavior. Color-coded links highlight bottlenecks immediately. Flow statistics prevent TCAM exhaustion. Event timelines aid troubleshooting.
+
+The system demonstrates that web technologies can support real-time network monitoring. Modern JavaScript frameworks provide responsive user interfaces. REST APIs and SSE offer simple integration with existing controllers.
+
+OpenVis is open source and available on GitHub. The codebase includes comprehensive test scenarios and documentation.
+
+\section*{Acknowledgment}
+
+The author thanks the Department of Computer Science at Nazarbayev University for supporting this project. Special thanks to the course instructor for guidance throughout development.
+
+% References
+\begin{thebibliography}{10}
+
+\bibitem{mckeown2008}
+N.~McKeown et al., ``OpenFlow: enabling innovation in campus networks,''
+\emph{ACM SIGCOMM Computer Communication Review}, vol. 38, no. 2, pp. 69--74, 2008.
+
+\bibitem{openflow13}
+Open Networking Foundation, ``OpenFlow Switch Specification Version 1.3.0,''
+2012. [Online]. Available: \url{https://opennetworking.org/}
+
+\bibitem{kreutz2015}
+D.~Kreutz et al., ``Software-defined networking: A comprehensive survey,''
+\emph{Proceedings of the IEEE}, vol. 103, no. 1, pp. 14--76, 2015.
+
+\bibitem{floodlight}
+``Project Floodlight,'' [Online]. Available: \url{https://github.com/floodlight/floodlight}
+
+\bibitem{opendaylight}
+``OpenDaylight Platform,'' [Online]. Available: \url{https://www.opendaylight.org/}
+
+\bibitem{mininet}
+B.~Lantz, B.~Heller, and N.~McKeown, ``A network in a laptop: rapid prototyping for software-defined networks,''
+in \emph{Proc. 9th ACM SIGCOMM Workshop on Hot Topics in Networks}, 2010.
+
+\bibitem{d3js}
+M.~Bostock, V.~Ogievetsky, and J.~Heer, ``D3: Data-Driven Documents,''
+\emph{IEEE Trans. Visualization \& Comp. Graphics}, vol. 17, no. 12, pp. 2301--2309, 2011.
+
+\bibitem{nextjs}
+``Next.js - The React Framework,'' [Online]. Available: \url{https://nextjs.org/}
+
+\bibitem{sdn_survey}
+W.~Xia et al., ``A survey on software-defined networking,''
+\emph{IEEE Communications Surveys \& Tutorials}, vol. 17, no. 1, pp. 27--51, 2015.
+
+\bibitem{openvis_github}
+``OpenVis: SDN Observability Tool,'' [Online]. Available: \url{https://github.com/4ry1337/sdn/tree/main/Project}
+
+\end{thebibliography}
+
+\vspace{12pt}
+\noindent\textbf{Project Repository:} \\
+Full source code, documentation, and test scenarios are available at:\\
+\url{https://github.com/4ry1337/sdn/tree/main/Project}
+
+\end{document}
